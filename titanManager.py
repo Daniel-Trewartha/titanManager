@@ -1,4 +1,5 @@
-
+from sqlalchemy import create_engine
+from base import Base
 
 def main():
     #xml input
@@ -11,21 +12,11 @@ def main():
     #nurse job to good health
     #check success: output file presence(non-0 size), pbs report
 
-#Job object:
-    #Columns:
-    #setup commands?
-    #executable
-    #aprun options
-    #resources (nodes and time)
-    #received date
-    #status
-    #run date (list?)
-    #input
-    #output
-    #pbs id (list?)
+    engine = create_engine('sqlite:///:memory:',echo=True)
+    import job
+    testJob = job.Job(jobName='testjob')
+    print testJob.jobName
+    print("HI")
 
-    #methods:
-    #getters/setters
-    #submit
-    #cancel
-    #check input/output files
+if __name__ == '__main__':
+    main()

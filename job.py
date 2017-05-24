@@ -22,23 +22,32 @@
 
 from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON
 import datetime
+import os
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import *
+from base import Base
 
-class Job:
-    def __init(self):
-        __tablename__ = 'jobs'
+class Job(Base):
+    __tablename__ = 'jobs'
         
-        id = column(integer, primary_key=True)
-        executionCommand = column(string)
-        nodes = column(integer)
-        wallTime = column(interval)
-        receivedTime = column(datetime)
-        status = column(string)
-        inputFiles = column(json)
-        outputFiles = column(json)
-        pbsID = column(json)
+    id = Column(Integer, primary_key=True)
+    jobName = Column(String)
+    executionCommand = Column(String)
+    nodes = Column(Integer)
+    #wallTime = column(interval)
+    #receivedTime = column(datetime)
+    #status = column(string)
+    #inputFiles = column(json)
+    #outputFiles = column(json)
+    #pbsID = column(json)
 
-def main():
-    print("HI")
+
+    def submit(self):
+        ##Create script with appropriate information
+        scriptName = self.jobname+".csh"
+        with open(scriptName,'w') as submissionScript:
+            submissionScript.write("Test")
+        os.system("qsub "+scriptName)
 
     
 
