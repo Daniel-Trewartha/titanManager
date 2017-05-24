@@ -66,11 +66,13 @@ class Job(Base):
             script.write(self.executionCommand)
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-        self.pbsID = pbsSubmit.stdout.read()
+        self.pbsID = pbsSubmit.stdout.read().strip()
 
     def checkStatus(self):
         if (self.pbsID):
             cmd = "qstat -f "+str(self.pbsID)+" | grep 'job_state'"
+            print(str(self.pbsID))
+            print(cmd)
             pbsCMD = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsStatus = pbsCMD.stdout.read()
             #pbsStatus = 'job_state = C'
