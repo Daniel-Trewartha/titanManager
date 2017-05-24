@@ -64,7 +64,9 @@ class Job(Base):
                 script.write("#PBS -l nodes=1\n")
             script.write("#PBS -j oe \n")
             script.write(self.executionCommand)
-        self.pbsID = os.system("qsub "+scriptName)
+        cmd = "qsub "+scriptName
+        pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
+        self.pbsID = pbsCMD.stdout.read()
 
     def checkStatus(self):
         if (self.pbsID):
