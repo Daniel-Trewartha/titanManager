@@ -55,16 +55,16 @@ class Job(Base):
             script.write("#PBS -N "+self.jobName+"\n")
             #FORMAT THIS PROPERLY HH:MM:SS
             if(self.wallTime):
-                script.write("#PBS -l walltime"+self.wallTime+"\n")
+                script.write("#PBS -l walltime="+self.wallTime+"\n")
             else: 
-                script.write("#PBS -l walltime 01:00:00\n")
+                script.write("#PBS -l walltime=01:00:00\n")
             if(self.nodes):
-                script.write("#PBS -l nodes"+self.nodes+"\n")
+                script.write("#PBS -l nodes="+self.nodes+"\n")
             else:
-                script.write("#PBS -l nodes 1\n")
+                script.write("#PBS -l nodes=1\n")
             script.write("#PBS -j oe \n")
             script.write(self.executionCommand)
-        self.pbsID = os.system("bash "+scriptName)
+        self.pbsID = os.system("qsub "+scriptName)
 
     def checkStatus(self):
         if (self.pbsID):
