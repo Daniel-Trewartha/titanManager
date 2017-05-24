@@ -25,7 +25,7 @@ import datetime
 import os
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import *
-from base import Base
+from base import Base,Session
 import subprocess
 from sqlalchemy import event
 from sqlalchemy.orm import mapper
@@ -41,10 +41,7 @@ class Job(Base):
     executionCommand = Column('executionCommand',String)
     nodes = Column('nodes',Integer)
     wallTime = Column('wallTime',Interval)
-    #receivedTime = column(datetime)
     status = Column('status',String)
-    #inputFiles = column(json)
-    #outputFiles = column(json)
     pbsID = Column('pbsID',Integer)
 
     def submit(self):
@@ -75,7 +72,6 @@ class Job(Base):
             print(cmd)
             pbsCMD = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsStatus = pbsCMD.stdout.read()
-            #pbsStatus = 'job_state = C'
             if (pbsStatus):
                 status = str.split(pbsStatus)[2]
                 self.status = status
@@ -83,6 +79,7 @@ class Job(Base):
                 status = "C"
         else:
             status = self.status        
+        Session.commit()
         return status
 
 #EVENT LISTENERS
