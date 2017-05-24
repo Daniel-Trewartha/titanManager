@@ -70,8 +70,6 @@ class Job(Base):
     def checkStatus(self):
         if (self.pbsID):
             cmd = "qstat -f "+str(self.pbsID)+" | grep 'job_state'"
-            print(str(self.pbsID))
-            print(cmd)
             pbsCMD = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsStatus = pbsCMD.stdout.read()
             if (pbsStatus):
@@ -85,15 +83,21 @@ class Job(Base):
                 self.status = status
         else:
             status = self.status        
+        if(self.status == "C"):
+            outputExistence = self.checkOutput()
+            if(outputExistence == "Output exists"):
+                status = "Successful"
+            else:
+                status = "Failed"
+            self.status=status
         Session.commit()
         return status
 
     def checkOutput(self):
-        status = self.checkStatus()
-        if (not status == "C"):
+        if (not self.status == "C"):
             return "Incomplete"
         else:
-            if (os.path.exists(os.path.join(outputDir,outputFiles))):
+            if (os.path.exists(os.path.join(self.outputDir,self.outputFiles))):
                 return "Output exists"
             else:
                 return "No Output"
@@ -108,3 +112,7 @@ def init(target, args, kwargs):
         target.jobName = "Default"
     if(not target.executionCommand):
         target.executionCommand = "echo 'No Execution Command'"
+    if(not target.outputDir):
+        target.outputDir = os.path.abspath(__file__)
+    if(not target.outputFiles):
+        target.outputFiles = ""

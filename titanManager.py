@@ -25,9 +25,8 @@ def main():
     testJob.submit()
     time.sleep(10)
     print testJob.checkStatus()
-    print testJob.checkOutput()
     time.sleep(60)
-    print testJob.checkOutput()
+    print testJob.checkStatus()
     Session.commit()
 
 if __name__ == '__main__':
