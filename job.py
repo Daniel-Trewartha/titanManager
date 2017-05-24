@@ -43,6 +43,8 @@ class Job(Base):
     wallTime = Column('wallTime',Interval)
     status = Column('status',String)
     pbsID = Column('pbsID',Integer)
+    outputDir = Column('outputDir',String)
+    outputFiles = Column('outputFiles',String)
 
     def submit(self):
         ##Create script with appropriate information
@@ -76,11 +78,25 @@ class Job(Base):
                 status = str.split(pbsStatus)[2]
                 self.status = status
             else:
-                status = "C"
+                if (os.path.exists(self.jobName+".o"+self.pbsID)):
+                    status = "C"
+                else:
+                    status = "Failed"
+                self.status = status
         else:
             status = self.status        
         Session.commit()
         return status
+
+    def checkOutput(self):
+        status = self.checkStatus()
+        if (not status == "C"):
+            return "Incomplete"
+        else:
+            if (os.path.exists(os.path.join(outputDir,outputFiles))):
+                return "Output exists"
+            else:
+                return "No Output"
 
 #EVENT LISTENERS
 

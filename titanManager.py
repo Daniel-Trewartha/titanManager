@@ -16,13 +16,18 @@ def main():
     #check success: output file presence(non-0 size), pbs report
     Base.metadata.create_all(engine)
 
-    testJob = job.Job(jobName="TestJob")
+    outputDir = os.path.split(os.path.abspath(__file__))[0]
+    outputFiles = "output.txt"
+    testJob = job.Job(jobName="TestJob",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test' >> "+os.path.join(outputDir,outputFiles))
     Session.add(testJob)
     print testJob.jobName
     print testJob.checkStatus()
     testJob.submit()
     time.sleep(10)
     print testJob.checkStatus()
+    print testJob.checkOutput()
+    time.sleep(60)
+    print testJob.checkOutput()
     Session.commit()
 
 if __name__ == '__main__':
