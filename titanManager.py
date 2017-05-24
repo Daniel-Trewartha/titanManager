@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from base import Base
+import time
 
 def main():
     #xml input
@@ -19,6 +20,7 @@ def main():
     print testJob.jobName
     print testJob.checkStatus()
     testJob.submit()
+    time.sleep(10)
     print testJob.checkStatus()
 
 if __name__ == '__main__':
