@@ -66,7 +66,7 @@ class Job(Base):
             script.write(self.executionCommand)
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-        self.pbsID = pbsCMD.stdout.read()
+        self.pbsID = pbsSubmit.stdout.read()
 
     def checkStatus(self):
         if (self.pbsID):
