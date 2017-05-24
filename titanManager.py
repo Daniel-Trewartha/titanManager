@@ -1,4 +1,4 @@
-from base import Base,Session
+from base import Base,Session,engine
 import time
 import os
 import job
@@ -14,6 +14,7 @@ def main():
     #submit if necessary
     #nurse job to good health
     #check success: output file presence(non-0 size), pbs report
+    Base.metadata.create_all(engine)
 
     testJob = job.Job(jobName="TestJob")
     Session.add(testJob)
