@@ -14,9 +14,12 @@ def main():
 
     engine = create_engine('sqlite:///:memory:',echo=True)
     import job
-    testJob = job.Job(jobName='testjob')
+
+    testJob = job.Job(jobName="TestJob")
     print testJob.jobName
-    print("HI")
+    print testJob.checkStatus()
+    testJob.submit()
+    print testJob.checkStatus()
 
 if __name__ == '__main__':
     main()
