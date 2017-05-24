@@ -21,12 +21,14 @@ def main():
     testJob = job.Job(jobName="TestJob",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test' >> "+os.path.join(outputDir,outputFiles))
     Session.add(testJob)
     print testJob.jobName
+    print testJob.pbsID
     print testJob.checkStatus()
     testJob.submit()
     time.sleep(10)
     print testJob.checkStatus()
     time.sleep(60)
     print testJob.checkStatus()
+    print testJob.pbsID
     Session.commit()
 
 if __name__ == '__main__':

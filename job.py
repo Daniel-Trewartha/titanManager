@@ -32,7 +32,6 @@ from sqlalchemy.orm import mapper
 from sqlalchemy.inspection import inspect
 
 
-
 class Job(Base):
     __tablename__ = 'jobs'
         
@@ -68,6 +67,8 @@ class Job(Base):
         self.pbsID = pbsSubmit.stdout.read().strip()
 
     def checkStatus(self):
+        status = self.status
+        #If you have a pbs id, do a qstat
         if (self.pbsID):
             cmd = "qstat -f "+str(self.pbsID)+" | grep 'job_state'"
             pbsCMD = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
@@ -76,26 +77,29 @@ class Job(Base):
                 status = str.split(pbsStatus)[2]
                 self.status = status
             else:
+                #if you have a pbs id but qstat is null, you've run
                 if (os.path.exists(self.jobName+".o"+self.pbsID)):
                     status = "C"
+                #this should never have to run
                 else:
                     status = "Failed"
-                self.status = status
-        else:
-            status = self.status        
-        if(self.status == "C"):
+        #If your pbs status is C, check to see if the output files exist
+        if(status == "C"):
             outputExistence = self.checkOutput()
             if(outputExistence == "Output exists"):
                 status = "Successful"
             else:
                 status = "Failed"
-            self.status=status
+        #commit changes
+        self.status = status
         Session.commit()
         return status
 
     def checkOutput(self):
+        #Shouldn't do this unless pbs reports C
         if (not self.status == "C"):
             return "Incomplete"
+        #check for output existence
         else:
             if (os.path.exists(os.path.join(self.outputDir,self.outputFiles))):
                 return "Output exists"
@@ -116,3 +120,4 @@ def init(target, args, kwargs):
         target.outputDir = os.path.abspath(__file__)
     if(not target.outputFiles):
         target.outputFiles = ""
+    target.pbsID = None
