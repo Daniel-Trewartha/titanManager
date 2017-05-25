@@ -51,9 +51,8 @@ class Job(Base):
         with open(scriptName,'w') as script:
             script.write("#PBS -A NPH103\n")
             script.write("#PBS -N "+self.jobName+"\n")
-            #FORMAT THIS PROPERLY HH:MM:SS
             if(self.wallTime):
-                script.write("#PBS -l walltime="+self.wallTime+"\n")
+                script.write("#PBS -l walltime="+str(self.wallTime)+"\n")
             else: 
                 script.write("#PBS -l walltime=01:00:00\n")
             if(self.nodes):

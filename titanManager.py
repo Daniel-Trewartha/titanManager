@@ -2,6 +2,7 @@ import time
 import os
 import job
 import sys
+from datetime import timedelta
 from base import Base,Session,engine
 
 
@@ -17,12 +18,16 @@ def main():
     #check success: output file presence(non-0 size), pbs report
     outputDir = os.path.split(os.path.abspath(__file__))[0]
     outputFiles = "output.txt"
-    testJob = job.Job(jobName="TestJob",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test' >> "+os.path.join(outputDir,outputFiles))
+    wallTime = "00:00:10"
+    hms = str.split(wallTime,":")
+    wT = timedelta(hours = int(hms[0]), minutes = int(hms[1]), seconds = int(hms[2]))
+    testJob = job.Job(jobName="TestJob",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test' >> "+os.path.join(outputDir,outputFiles),wallTime=wT)
     Session.add(testJob)
     Session.commit()
     print testJob.id
     print testJob.jobName
     print testJob.pbsID
+    print testJob.wallTime
     testJob.submit(os.path.abspath(__file__))
     time.sleep(10)
     print testJob.status
