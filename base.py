@@ -7,3 +7,4 @@ localDBFile = os.path.split(os.path.abspath(__file__))[0]+"/manager.db"
 engine = create_engine('sqlite:///'+localDBFile,echo=False)
 DBSession = sessionmaker(bind=engine)
 Session = DBSession()
+virtualEnvPath = os.path.join(os.path.abspath(__file__)[0],"titanManager","bin","activate")

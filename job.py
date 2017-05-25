@@ -25,7 +25,7 @@ import datetime
 import os
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import *
-from base import Base,Session
+from base import Base,Session,virtualEnvPath
 import subprocess
 from sqlalchemy import event
 from sqlalchemy.orm import mapper
@@ -45,7 +45,7 @@ class Job(Base):
     outputDir = Column('outputDir',String)
     outputFiles = Column('outputFiles',String)
 
-    def submit(self):
+    def submit(self,mainPath):
         ##Create script with appropriate information
         scriptName = self.jobName+".csh"
         with open(scriptName,'w') as script:
@@ -61,7 +61,14 @@ class Job(Base):
             else:
                 script.write("#PBS -l nodes=1\n")
             script.write("#PBS -j oe \n")
-            script.write(self.executionCommand)
+            script.write("source "+virtualEnvPath+"\n")
+            script.write("python "+mainPath+" updateJobStatus "+str(self.id)+" R\n")
+            script.write("exit\n")
+            script.write(self.executionCommand+"\n")
+            script.write("source "+virtualEnvPath+"\n")
+            script.write("python "+mainPath+" updateJobStatus "+str(self.id)+" C\n")
+            script.write("python "+mainPath+" checkJobStatus "+str(self.id)+" C\n")
+            script.write("exit\n")
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
         self.pbsID = pbsSubmit.stdout.read().strip()
