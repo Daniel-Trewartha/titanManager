@@ -67,7 +67,7 @@ class Job(Base):
             script.write(self.executionCommand+"\n")
             script.write("source "+virtualEnvPath+"\n")
             script.write("python "+mainPath+" updateJobStatus "+str(self.id)+" C\n")
-            script.write("python "+mainPath+" checkJobStatus "+str(self.id)+" C\n")
+            script.write("python "+mainPath+" checkJobStatus "+str(self.id)+"\n")
             script.write("deactivate\n")
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
