@@ -1,8 +1,8 @@
-from base import Base,Session,engine
 import time
 import os
 import job
 import sys
+from base import Base,Session,engine
 
 
 def main():
@@ -15,12 +15,11 @@ def main():
     #submit if necessary
     #nurse job to good health
     #check success: output file presence(non-0 size), pbs report
-    Base.metadata.create_all(engine)
-
     outputDir = os.path.split(os.path.abspath(__file__))[0]
     outputFiles = "output.txt"
     testJob = job.Job(jobName="TestJob",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test' >> "+os.path.join(outputDir,outputFiles))
     Session.add(testJob)
+    Session.commit()
     print testJob.id
     print testJob.jobName
     print testJob.pbsID
@@ -50,6 +49,7 @@ def checkJobStatus(jobID):
         return "No Job Found"
 
 if __name__ == '__main__':
+    Base.metadata.create_all(engine)
     if(len(sys.argv)>1):
         if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
             print updateJobStatus(sys.argv[2],sys.argv[3])
