@@ -34,7 +34,7 @@ def main():
     wallTime = "01:00:00"
     nodes = 500
     wT = utilities.parseTimeString(wallTime)
-    testJob3 = job.Job(nodes=nodes,jobName="TestJob2",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test3' >> "+os.path.join(outputDir,outputFiles),wallTime=wT)
+    testJob3 = job.Job(nodes=nodes,jobName="TestJob3",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test3' >> "+os.path.join(outputDir,outputFiles),wallTime=wT)
     Session.add(testJob3)
     Session.commit()
     submitRunnableJobs(True)
@@ -64,10 +64,11 @@ def checkJobStatus(jobID):
 def submitRunnableJobs(isWallTimeRestricted):
     #Submit jobs smaller than number of available nodes, optionally also within walltime limits
     nodes, minWallTime = pbsManager.getFreeResources()
-    eligibleJobs = Session.query(job.Job).filter(job.Job.nodes <= nodes)
+    eligibleJobs = Session.query(job.Job).filter(job.Job.nodes <= nodes).filter(job.Job.status = "Accepted")
     if (isWallTimeRestricted):
         eligibleJobs.filter(job.Job.wallTime < minWallTime)
     for j in eligibleJobs:
+        print "Submitting"
         print j.id, j.jobName
         j.submit(os.path.abspath(__file__))
 

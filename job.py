@@ -71,6 +71,8 @@ class Job(Base):
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
         self.pbsID = pbsSubmit.stdout.read().strip()
+        self.status = "Submitted"
+        Session.commit()
 
     def checkStatus(self):
         status = self.status
