@@ -56,7 +56,7 @@ class Job(Base):
             else: 
                 script.write("#PBS -l walltime=01:00:00\n")
             if(self.nodes):
-                script.write("#PBS -l nodes="+self.nodes+"\n")
+                script.write("#PBS -l nodes="+str(self.nodes)+"\n")
             else:
                 script.write("#PBS -l nodes=1\n")
             script.write("#PBS -j oe \n")

@@ -64,6 +64,7 @@ def checkJobStatus(jobID):
 def submitRunnableJobs(isWallTimeRestricted):
     #Submit jobs smaller than number of available nodes, optionally also within walltime limits
     nodes, minWallTime = pbsManager.getFreeResources()
+    print "Available Resources: ", nodes, minWallTime
     eligibleJobs = Session.query(job.Job).filter(job.Job.nodes <= nodes).filter(job.Job.status = "Accepted")
     if (isWallTimeRestricted):
         eligibleJobs.filter(job.Job.wallTime < minWallTime)
