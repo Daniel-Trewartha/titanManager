@@ -4,6 +4,7 @@ import job
 import sys
 from datetime import timedelta
 from base import Base,Session,engine
+import utilities
 
 
 def main():
@@ -19,8 +20,7 @@ def main():
     outputDir = os.path.split(os.path.abspath(__file__))[0]
     outputFiles = "output.txt"
     wallTime = "00:00:10"
-    hms = str.split(wallTime,":")
-    wT = timedelta(hours = int(hms[0]), minutes = int(hms[1]), seconds = int(hms[2]))
+    wT = utilities.parseTimeString(wallTime)
     testJob = job.Job(jobName="TestJob",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test' >> "+os.path.join(outputDir,outputFiles),wallTime=wT)
     Session.add(testJob)
     Session.commit()

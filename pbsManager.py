@@ -2,7 +2,8 @@ import os
 import sys
 import subprocess
 from base import totalNodes, Base, engine
-import DateTime
+import datetime
+import utilities
 
 def main():
 	print "Commands for pbs"
@@ -16,7 +17,7 @@ def getFreeResources():
 		if (len(sLine) == 11):
 			if(int(sLine[5])):
 				freeNodes -= int(sLine[5])
-			print str.split(line)[8],str.split(line)[10]
+			print utilities.parseTimeString(str.split(line)[8]),utilities.parseTimeString(str.split(line)[10])
 	print freeNodes
 
 if __name__ == '__main__':
