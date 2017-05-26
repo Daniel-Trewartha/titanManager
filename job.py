@@ -126,4 +126,8 @@ def init(target, args, kwargs):
         target.outputDir = os.path.abspath(__file__)
     if(not target.outputFiles):
         target.outputFiles = ""
+    if(not target.nodes):
+        target.nodes = 1
+    if(not target.wallTime):
+        target.wallTime = datetime.timedelta(hours=1)                
     target.pbsID = None

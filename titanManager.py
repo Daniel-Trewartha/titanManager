@@ -5,7 +5,7 @@ import sys
 from datetime import timedelta
 from base import Base,Session,engine
 import utilities
-
+import pbsManager
 
 def main():
     #xml input
@@ -24,17 +24,25 @@ def main():
     testJob = job.Job(jobName="TestJob",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test' >> "+os.path.join(outputDir,outputFiles),wallTime=wT)
     Session.add(testJob)
     Session.commit()
-    print testJob.id
-    print testJob.jobName
-    print testJob.pbsID
-    print testJob.wallTime
-    testJob.submit(os.path.abspath(__file__))
-    time.sleep(10)
-    print testJob.status
-    time.sleep(60)
-    print testJob.status
-    print testJob.pbsID 
+    outputFiles = "output2.txt"
+    wallTime = "01:00:00"
+    wT = utilities.parseTimeString(wallTime)
+    testJob2 = job.Job(jobName="TestJob2",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test2' >> "+os.path.join(outputDir,outputFiles),wallTime=wT)
+    Session.add(testJob2)
     Session.commit()
+    outputFiles = "output3.txt"
+    wallTime = "01:00:00"
+    nodes = 500
+    wT = utilities.parseTimeString(wallTime)
+    testJob3 = job.Job(nodes=nodes,jobName="TestJob2",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test3' >> "+os.path.join(outputDir,outputFiles),wallTime=wT)
+    Session.add(testJob3)
+    Session.commit()
+    submitRunnableJobs(True)
+    submitRunnableJobs(False)
+    time.sleep(60)
+    print testJob.pbsID,testJob.status
+    print testJob2.pbsID,testJob2.status
+    print testJob3.pbsID,testJob3.status
 
 def updateJobStatus(jobID,status):
     thisJob = Session.query(job.Job).filter(job.Job.id == jobID).first()
@@ -52,6 +60,16 @@ def checkJobStatus(jobID):
         return "Job status "+str(thisJob.status)
     else:
         return "No Job Found"
+
+def submitRunnableJobs(isWallTimeRestricted):
+    #Submit jobs smaller than number of available nodes, optionally also within walltime limits
+    nodes, minWallTime = pbsManager.getFreeResources()
+    eligibleJobs = Session.query(job.Job).filter(job.Job.nodes <= nodes)
+    if (isWallTimeRestricted):
+        eligibleJobs.filter(job.Job.wallTime < minWallTime)
+    for j in eligibleJobs:
+        print j.id, j.jobName
+        j.submit(os.path.abspath(__file__))
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)

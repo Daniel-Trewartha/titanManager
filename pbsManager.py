@@ -19,7 +19,7 @@ def getFreeResources():
 			if(int(sLine[5])):
 				freeNodes -= int(sLine[5])
 			wallTime = utilities.parseTimeString(str.split(line)[8]) - utilities.parseTimeString(str.split(line)[10])
-			if (wallTime < minWallTime):
+			if (wallTime < minWallTime and wallTime.total_seconds() > 0):
 				minWallTime = wallTime
 	return freeNodes, minWallTime
 
