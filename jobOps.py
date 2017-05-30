@@ -1,6 +1,7 @@
 import time
 import os
 import job
+import jobFile
 import sys
 from datetime import timedelta
 import pbsManager
@@ -44,3 +45,13 @@ def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted):
         print "Submitting"
         print j.id, j.jobName
         j.submit(os.path.abspath(__file__))
+
+if __name__ == '__main__':
+    Base.metadata.create_all(engine)
+    if(len(sys.argv)>1):
+        if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
+            print updateJobStatus(sys.argv[2],sys.argv[3])
+        elif (sys.argv[1] == 'checkJobStatus' and len(sys.argv) == 3):
+            print checkJobStatus(sys.argv[2])
+    else:
+        print("Job Operations")

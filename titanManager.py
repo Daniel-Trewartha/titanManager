@@ -42,8 +42,8 @@ if __name__ == '__main__':
     Base.metadata.create_all(engine)
     if(len(sys.argv)>1):
         if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
-            print updateJobStatus(sys.argv[2],sys.argv[3])
+            print jobOps.updateJobStatus(sys.argv[2],sys.argv[3])
         elif (sys.argv[1] == 'checkJobStatus' and len(sys.argv) == 3):
-            print checkJobStatus(sys.argv[2])
+            print jobOps.checkJobStatus(sys.argv[2])
     else:
         main()
