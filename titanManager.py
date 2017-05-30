@@ -4,6 +4,7 @@ import job
 import sys
 from datetime import timedelta
 from base import Base,Session,engine
+from jobOps import submitJobs
 import utilities
 import pbsManager
 
@@ -37,41 +38,13 @@ def main():
     testJob3 = job.Job(nodes=nodes,jobName="TestJob3",outputDir=outputDir,outputFiles=outputFiles,executionCommand="echo 'test3' >> "+os.path.join(outputDir,outputFiles),wallTime=wT)
     Session.add(testJob3)
     Session.commit()
-    submitRunnableJobs(True)
-    submitRunnableJobs(False)
+    submitJobs(True,True)
+    submitJobs(False,True)
+    submitJobs(True,True)
     time.sleep(60)
     print testJob.pbsID,testJob.status
     print testJob2.pbsID,testJob2.status
     print testJob3.pbsID,testJob3.status
-
-def updateJobStatus(jobID,status):
-    thisJob = Session.query(job.Job).filter(job.Job.id == jobID).first()
-    if (thisJob):
-        thisJob.status = status
-        Session.commit()
-        return "Updated job id "+jobID+" to "+str(status)
-    else:
-        return "No Job Found"
-
-def checkJobStatus(jobID):
-    thisJob = Session.query(job.Job).filter(job.Job.id == jobID).first()
-    if (thisJob):
-        thisJob.checkStatus()
-        return "Job status "+str(thisJob.status)
-    else:
-        return "No Job Found"
-
-def submitRunnableJobs(isWallTimeRestricted):
-    #Submit jobs smaller than number of available nodes, optionally also within walltime limits
-    nodes, minWallTime = pbsManager.getFreeResources()
-    print "Available Resources: ", nodes, minWallTime
-    eligibleJobs = Session.query(job.Job).filter(job.Job.nodes <= nodes).filter(job.Job.status = "Accepted")
-    if (isWallTimeRestricted):
-        eligibleJobs.filter(job.Job.wallTime < minWallTime)
-    for j in eligibleJobs:
-        print "Submitting"
-        print j.id, j.jobName
-        j.submit(os.path.abspath(__file__))
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)

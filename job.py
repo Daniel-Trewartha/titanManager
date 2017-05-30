@@ -76,8 +76,9 @@ class Job(Base):
 
     def checkStatus(self):
         status = self.status
-        #If you have a pbs id, do a qstat
-        if (self.pbsID):
+        #If submitted but not yet run, do a qstat
+        #Should avoid triggering this if at all possible
+        if (status == 'Submitted'):
             cmd = "qstat -f "+str(self.pbsID)+" | grep 'job_state'"
             pbsCMD = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsStatus = pbsCMD.stdout.read()
