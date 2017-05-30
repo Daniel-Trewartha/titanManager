@@ -30,7 +30,8 @@ import subprocess
 from sqlalchemy import event
 from sqlalchemy.orm import mapper
 from sqlalchemy.inspection import inspect
-
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -42,8 +43,7 @@ class Job(Base):
     wallTime = Column('wallTime',Interval)
     status = Column('status',String)
     pbsID = Column('pbsID',Integer)
-    outputDir = Column('outputDir',String)
-    outputFiles = Column('outputFiles',String)
+    files = relationship("File", back_populates="job")
 
     def submit(self,mainPath):
         ##Create script with appropriate information
@@ -94,8 +94,7 @@ class Job(Base):
                     status = "Failed"
         #If your pbs status is C, check to see if the output files exist
         if(status == "C"):
-            outputExistence = self.checkOutput()
-            if(outputExistence == "Output exists"):
+            if(self.checkOutput):
                 status = "Successful"
             else:
                 status = "Failed"
@@ -110,10 +109,10 @@ class Job(Base):
             return "Incomplete"
         #check for output existence
         else:
-            if (os.path.exists(os.path.join(self.outputDir,self.outputFiles))):
-                return "Output exists"
-            else:
-                return "No Output"
+            for oF in self.files:
+                if (not os.path.exists(os.path.join(self.outputDir,oF))):
+                    return False
+            return True
 
 #EVENT LISTENERS
 
@@ -125,10 +124,6 @@ def init(target, args, kwargs):
         target.jobName = "Default"
     if(not target.executionCommand):
         target.executionCommand = "echo 'No Execution Command'"
-    if(not target.outputDir):
-        target.outputDir = os.path.abspath(__file__)
-    if(not target.outputFiles):
-        target.outputFiles = ""
     if(not target.nodes):
         target.nodes = 1
     if(not target.wallTime):

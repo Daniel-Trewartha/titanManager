@@ -7,21 +7,15 @@ import pbsManager
 from base import Base,Session,engine
 
 def updateJobStatus(jobID,status):
-    thisJob = Session.query(job.Job).filter(job.Job.id == jobID).first()
-    if (thisJob):
-        thisJob.status = status
-        Session.commit()
-        return "Updated job id "+jobID+" to "+str(status)
-    else:
-        return "No Job Found"
+    thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
+    thisJob.status = status
+    Session.commit()
+    return "Updated job id "+jobID+" to "+str(status)
 
 def checkJobStatus(jobID):
-    thisJob = Session.query(job.Job).filter(job.Job.id == jobID).first()
-    if (thisJob):
-        thisJob.checkStatus()
-        return "Job status "+str(thisJob.status)
-    else:
-        return "No Job Found"
+    thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
+    thisJob.checkStatus()
+    return "Job status "+str(thisJob.status)
 
 def submitJobs(isWallTimeRestricted, isNodeRestricted):
     #Submit jobs, optionally only those that fit on current free resources
