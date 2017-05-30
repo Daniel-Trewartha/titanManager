@@ -27,8 +27,8 @@ def main():
     testJob = job.Job(jobName="TestJob",executionCommand=eC,wallTime=wT)
     Session.add(testJob)
     Session.commit()
-    testJobFile1 =  jobFile.File(fileName="output.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
-    testJobFile2 =  jobFile.File(fileName="otheroutput.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
+    testJobFile1 =  jobFile.File(fileName="output.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
+    testJobFile2 =  jobFile.File(fileName="otheroutput.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
     Session.commit()
     testJob.files = [testJobFile1,testJobFile2]
     print testJob.files
@@ -37,8 +37,6 @@ def main():
     submitJobs(True,True)
     time.sleep(60)
     print testJob.pbsID,testJob.status
-    print testJob2.pbsID,testJob2.status
-    print testJob3.pbsID,testJob3.status
 
 if __name__ == '__main__':
     Base.metadata.create_all(engine)

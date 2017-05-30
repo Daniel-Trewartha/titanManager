@@ -18,8 +18,9 @@ class File(Base):
     fileName = Column('fileName',String)
     fileDir = Column('fileDir',String)
     jobID = Column('jobID',Integer,ForeignKey("jobs.id"),nullable=False)
-
+    ioType = Column('ioType',String)
     job = relationship("Job", back_populates="files")
+
 
 
 #EVENT LISTENERS
@@ -27,4 +28,7 @@ class File(Base):
 #Defaults
 @event.listens_for(File,"init")
 def init(target, args, kwargs):
-    pass
+    if(not target.ioType):
+        target.ioType = 'output'
+    if(not target.fileDir):
+        target.fileDir = os.path.split(os.path.abspath(__file__))[0]

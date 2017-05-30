@@ -109,8 +109,8 @@ class Job(Base):
             return "Incomplete"
         #check for output existence
         else:
-            for oF in self.files:
-                if (not os.path.exists(os.path.join(self.outputDir,oF))):
+            for oF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'output').all():
+                if (not os.path.exists(os.path.join(oF.fileDir,oF.fileName))):
                     return False
             return True
 
