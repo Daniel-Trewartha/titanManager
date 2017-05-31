@@ -18,11 +18,26 @@ def checkJobStatus(jobID):
     thisJob.checkStatus()
     return "Job status "+str(thisJob.status)
 
+def checkInputFiles():
+    eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Accepted")
+    for j in eligibleJobs:
+        inputPresent = True
+        for dummy,iF in Session.query(job.Job,jobFile.File).filter(job.Job.id == j.id).filter(jobFile.File.jobID == j.id).filter(jobFile.File.ioType == 'input').all():
+                if (not os.path.exists(os.path.join(iF.fileDir,iF.fileName))):
+                    inputPresent = False
+        if (inputPresent):
+            j.status = "Ready"
+        else:
+            j.status = "Missing Input"
+    Session.commit()
+
+
 def submitJobs(isWallTimeRestricted, isNodeRestricted):
     #Submit jobs, optionally only those that fit on current free resources
+    checkInputFiles()
     nodes, minWallTime = pbsManager.getFreeResources()
     print "Available Resources: ", nodes, minWallTime
-    eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Accepted")
+    eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Ready")
     if(isNodeRestricted):
         eligibleJobs.filter(job.Job.nodes <= nodes)
     if (isWallTimeRestricted):

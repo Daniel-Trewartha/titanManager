@@ -29,12 +29,13 @@ def main():
     Session.commit()
     testJobFile1 =  jobFile.File(fileName="output.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
     testJobFile2 =  jobFile.File(fileName="otheroutput.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
+    testJobFile2 =  jobFile.File(fileName="notes.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='input')
     Session.commit()
     testJob.files = [testJobFile1,testJobFile2]
     print testJob.files
-    submitJobs(True,True)
-    submitJobs(False,True)
-    submitJobs(True,True)
+    print testJob.status
+    submitJobs(False,False)
+    print testJob.status
     time.sleep(60)
     print testJob.pbsID,testJob.status
 
