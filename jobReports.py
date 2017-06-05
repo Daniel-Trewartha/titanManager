@@ -16,7 +16,6 @@ def jobStatuses():
 
 if __name__ == '__main__':
     with session_scope(engine) as Session:
-	    engine = create_engine('sqlite:///'+os.environ["localDBFile"],echo=False)
         if(len(sys.argv)>1):
             if (sys.argv[1] == 'jobStatuses'):
             	print jobStatuses()
