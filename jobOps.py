@@ -6,6 +6,7 @@ import sys
 from datetime import timedelta
 import pbsManager
 from base import Base,localDBFile,session_scope
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 def updateJobStatus(jobID,status,Session):
