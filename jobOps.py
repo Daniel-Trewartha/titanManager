@@ -5,25 +5,26 @@ import jobFile
 import sys
 from datetime import timedelta
 import pbsManager
-from base import Base,Session,engine
+from base import Base,localDBFile,session_scope
+from sqlalchemy.orm import sessionmaker
 
-def updateJobStatus(jobID,status):
+def updateJobStatus(jobID,status,Session):
     thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
     thisJob.status = status
     Session.commit()
     return "Updated job id "+jobID+" to "+str(status)
 
-def checkJobStatus(jobID):
+def checkJobStatus(jobID,Session):
     thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
     thisJob.checkStatus()
     return "Job status "+str(thisJob.status)
 
-def checkInputFiles():
+def checkInputFiles(Session):
     eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Accepted")
     for j in eligibleJobs:
         inputPresent = True
         for dummy,iF in Session.query(job.Job,jobFile.File).filter(job.Job.id == j.id).filter(jobFile.File.jobID == j.id).filter(jobFile.File.ioType == 'input').all():
-                if (not os.path.exists(os.path.join(iF.fileDir,iF.fileName))):
+                if (not iF.exists(Session)):
                     inputPresent = False
         if (inputPresent):
             j.status = "Ready"
@@ -32,9 +33,9 @@ def checkInputFiles():
     Session.commit()
 
 
-def submitJobs(isWallTimeRestricted, isNodeRestricted):
+def submitJobs(isWallTimeRestricted, isNodeRestricted,Session):
     #Submit jobs, optionally only those that fit on current free resources
-    checkInputFiles()
+    checkInputFiles(Session)
     nodes, minWallTime = pbsManager.getFreeResources()
     print "Available Resources: ", nodes, minWallTime
     eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Ready")
@@ -45,9 +46,9 @@ def submitJobs(isWallTimeRestricted, isNodeRestricted):
     for j in eligibleJobs:
         print "Submitting"
         print j.id, j.jobName
-        j.submit(os.path.abspath(__file__))
+        j.submit(os.path.abspath(__file__),Session)
 
-def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted):
+def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
     #Rerun Failed jobs, optionally only those that fit on current free resources
     nodes, minWallTime = pbsManager.getFreeResources()
     print "Available Resources: ", nodes, minWallTime
@@ -59,14 +60,16 @@ def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted):
     for j in eligibleJobs:
         print "Submitting"
         print j.id, j.jobName
-        j.submit(os.path.abspath(__file__))
+        j.submit(os.path.abspath(__file__),Session)
 
 if __name__ == '__main__':
+    engine = create_engine('sqlite:///'+localDBFile,echo=False)
     Base.metadata.create_all(engine)
-    if(len(sys.argv)>1):
-        if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
-            print updateJobStatus(sys.argv[2],sys.argv[3])
-        elif (sys.argv[1] == 'checkJobStatus' and len(sys.argv) == 3):
-            print checkJobStatus(sys.argv[2])
-    else:
-        print("Job Operations")
+    with session_scope(engine) as Session:
+        if(len(sys.argv)>1):
+            if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
+                print updateJobStatus(sys.argv[2],sys.argv[3])
+            elif (sys.argv[1] == 'checkJobStatus' and len(sys.argv) == 3):
+                print checkJobStatus(sys.argv[2])
+        else:
+            print("Job Operations")

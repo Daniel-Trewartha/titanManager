@@ -1,4 +1,4 @@
-from base import Base,Session,engine
+from base import Base,localDBFile,session_scope
 import time
 import os
 import job
@@ -13,9 +13,11 @@ def jobStatuses():
 
 
 if __name__ == '__main__':
-    Base.metadata.create_all(engine)
-    if(len(sys.argv)>1):
-        if (sys.argv[1] == 'jobStatuses'):
-            print jobStatuses()
-    else:
-        main()
+    engine = create_engine('sqlite:///'+localDBFile,echo=False)
+    with session_scope(engine) as Session:
+	    Base.metadata.create_all(engine)
+    	if(len(sys.argv)>1):
+        	if (sys.argv[1] == 'jobStatuses'):
+            	print jobStatuses()
+    	else:
+        	main()

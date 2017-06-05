@@ -1,7 +1,7 @@
 import os
 import sys
 import subprocess
-from base import totalNodes, Base, engine
+from base import totalNodes
 import datetime
 import utilities
 
@@ -22,11 +22,3 @@ def getFreeResources():
 			if (wallTime < minWallTime and wallTime.total_seconds() > 0):
 				minWallTime = wallTime
 	return freeNodes, minWallTime
-
-if __name__ == '__main__':
-    Base.metadata.create_all(engine)
-    if(len(sys.argv)>1):
-        if (sys.argv[1] == 'getFreeResources'):
-            print getFreeResources()
-    else:
-        main()

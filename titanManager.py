@@ -4,10 +4,12 @@ import job
 import jobFile
 import sys
 from datetime import timedelta
-from base import Base,Session,engine
+from base import Base,localDBFile,session_scope
+from sqlalchemy import create_engine
 from jobOps import submitJobs
 import utilities
 import pbsManager
+from sqlalchemy.orm import sessionmaker
 
 def main():
     #xml input
@@ -34,17 +36,13 @@ def main():
     testJob.files = [testJobFile1,testJobFile2]
     print testJob.files
     print testJob.status
-    submitJobs(False,False)
+    submitJobs(False,False,Session)
     print testJob.status
     time.sleep(60)
     print testJob.pbsID,testJob.status
 
 if __name__ == '__main__':
-    Base.metadata.create_all(engine)
-    if(len(sys.argv)>1):
-        if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
-            print jobOps.updateJobStatus(sys.argv[2],sys.argv[3])
-        elif (sys.argv[1] == 'checkJobStatus' and len(sys.argv) == 3):
-            print jobOps.checkJobStatus(sys.argv[2])
-    else:
+    engine = create_engine('sqlite:///'+localDBFile,echo=False)
+    with session_scope(engine) as Session:
+        Base.metadata.create_all(engine)
         main()

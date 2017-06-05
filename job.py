@@ -25,7 +25,7 @@ import datetime
 import os
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import *
-from base import Base,Session,virtualEnvPath
+from base import Base,virtualEnvPath
 import subprocess
 from sqlalchemy import event
 from sqlalchemy.orm import mapper
@@ -45,7 +45,7 @@ class Job(Base):
     pbsID = Column('pbsID',Integer)
     files = relationship("File", back_populates="job")
 
-    def submit(self,mainPath):
+    def submit(self,mainPath,Session):
         ##Create script with appropriate information
         scriptName = self.jobName+".csh"
         with open(scriptName,'w') as script:
@@ -74,7 +74,7 @@ class Job(Base):
         self.status = "Submitted"
         Session.commit()
 
-    def checkStatus(self):
+    def checkStatus(self,Session):
         status = self.status
         #If submitted but not yet run, do a qstat
         #Should avoid triggering this if at all possible
@@ -103,14 +103,14 @@ class Job(Base):
         Session.commit()
         return status
 
-    def checkOutput(self):
+    def checkOutput(self,Session):
         #Shouldn't do this unless pbs reports C
         if (not self.status == "C"):
             return "Incomplete"
         #check for output existence
         else:
             for oF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'output').all():
-                if (not os.path.exists(os.path.join(oF.fileDir,oF.fileName))):
+                if (not oF.exists()):
                     return False
             return True
 
