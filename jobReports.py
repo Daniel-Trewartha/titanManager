@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 import time
 import os
 import job
+import jobFile
 import sys
 
 def main():
@@ -16,9 +17,8 @@ def jobStatuses():
 if __name__ == '__main__':
     engine = create_engine('sqlite:///'+localDBFile,echo=False)
     with session_scope(engine) as Session:
-	    Base.metadata.create_all(engine)
-    	if(len(sys.argv)>1):
-        	if (sys.argv[1] == 'jobStatuses'):
+        if(len(sys.argv)>1):
+            if (sys.argv[1] == 'jobStatuses'):
             	print jobStatuses()
-    	else:
-        	main()
+        else:
+            main()
