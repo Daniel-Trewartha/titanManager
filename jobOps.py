@@ -5,9 +5,7 @@ import jobFile
 import sys
 from datetime import timedelta
 import pbsManager
-from base import Base,localDBFile,session_scope
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from base import Base,session_scope,engine
 
 def updateJobStatus(jobID,status,Session):
     thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
@@ -64,13 +62,12 @@ def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
         j.submit(os.path.abspath(__file__),Session)
 
 if __name__ == '__main__':
-    engine = create_engine('sqlite:///'+localDBFile,echo=False)
-    Base.metadata.create_all(engine)
-    with session_scope(engine) as Session:
+    with session_scope() as Session:
+        Base.metadata.create_all(engine)
         if(len(sys.argv)>1):
             if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
-                print updateJobStatus(sys.argv[2],sys.argv[3])
+                print updateJobStatus(sys.argv[2],sys.argv[3],Session)
             elif (sys.argv[1] == 'checkJobStatus' and len(sys.argv) == 3):
-                print checkJobStatus(sys.argv[2])
+                print checkJobStatus(sys.argv[2],Session)
         else:
             print("Job Operations")

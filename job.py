@@ -25,7 +25,7 @@ import datetime
 import os
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import *
-from base import Base,virtualEnvPath
+from base import Base
 import subprocess
 from sqlalchemy import event
 from sqlalchemy.orm import mapper
@@ -45,7 +45,7 @@ class Job(Base):
     pbsID = Column('pbsID',Integer)
     files = relationship("File", back_populates="job")
 
-    def submit(self,mainPath,Session):
+    def submit(self,jobManagerPath,Session):
         ##Create script with appropriate information
         scriptName = self.jobName+".csh"
         with open(scriptName,'w') as script:
@@ -59,14 +59,18 @@ class Job(Base):
                 script.write("#PBS -l nodes="+str(self.nodes)+"\n")
             else:
                 script.write("#PBS -l nodes=1\n")
+
             script.write("#PBS -j oe \n")
-            script.write("source "+virtualEnvPath+"\n")
-            script.write("python "+mainPath+" updateJobStatus "+str(self.id)+" R\n")
+            if ("virtualEnvPath" in os.environ) and ("envVarsPath" in os.environ):
+                script.write("source "+os.environ["virtualEnvPath"]+"\n")
+                script.write("python"+os.environ["envVarsPath"])
+                script.write("python "+jobManagerPath+" updateJobStatus "+str(self.id)+" R\n")
             script.write("deactivate\n")
             script.write(self.executionCommand+"\n")
-            script.write("source "+virtualEnvPath+"\n")
-            script.write("python "+mainPath+" updateJobStatus "+str(self.id)+" C\n")
-            script.write("python "+mainPath+" checkJobStatus "+str(self.id)+"\n")
+            if ("virtualEnvPath" in os.environ) and ("envVarsPath" in os.environ):
+                script.write("source "+os.environ["virtualEnvPath"]+"\n")
+                script.write("python "+jobManagerPath+" updateJobStatus "+str(self.id)+" C\n")
+                script.write("python "+jobManagerPath+" checkJobStatus "+str(self.id)+"\n")
             script.write("deactivate\n")
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)

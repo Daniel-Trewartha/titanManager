@@ -1,15 +1,14 @@
+import environment
 import time
 import os
 import job
 import jobFile
 import sys
 from datetime import timedelta
-from base import Base,localDBFile,session_scope
-from sqlalchemy import create_engine
+from base import Base,session_scope,engine
 from jobOps import submitJobs
 import utilities
 import pbsManager
-from sqlalchemy.orm import sessionmaker
 
 def main():
     #xml input
@@ -42,7 +41,6 @@ def main():
     print testJob.pbsID,testJob.status
 
 if __name__ == '__main__':
-    engine = create_engine('sqlite:///'+localDBFile,echo=False)
     with session_scope(engine) as Session:
         Base.metadata.create_all(engine)
         main()

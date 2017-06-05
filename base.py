@@ -1,13 +1,15 @@
 from sqlalchemy.ext.declarative import declarative_base
 import os
+import sys
 from contextlib import contextmanager
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
 Base = declarative_base()
-localDBFile = os.path.split(os.path.abspath(__file__))[0]+"/manager.db"
-localTestDBFile = os.path.split(os.path.abspath(__file__))[0]+"/test.db"
-virtualEnvPath = os.path.join(os.path.split(os.path.abspath(__file__))[0],"titanManager","bin","activate")
-totalNodes = 18649
+if "localDBFile" in os.environ:
+	engine = create_engine('sqlite:///'+os.environ["localDBFile"],echo=False)
+else:
+	sys.exit("Environment Variables Not Defined")
 
 @contextmanager
 def session_scope(engine):

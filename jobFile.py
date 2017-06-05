@@ -3,7 +3,7 @@ import datetime
 import os
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import *
-from base import Base,virtualEnvPath
+from base import Base
 from sqlalchemy import event
 from sqlalchemy.orm import mapper
 from sqlalchemy.inspection import inspect

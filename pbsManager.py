@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess
-from base import totalNodes
 import datetime
 import utilities
 
@@ -11,7 +10,7 @@ def main():
 def getFreeResources():
 	cmd = "qstat -a | grep ' R '"
 	qstatOut = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True).stdout.read()
-	freeNodes = totalNodes
+	freeNodes = os.environ["totalNodes"]
 	minWallTime = datetime.timedelta(hours=3000)
 	for line in str.split(qstatOut,'\n'):
 		sLine = str.split(line)

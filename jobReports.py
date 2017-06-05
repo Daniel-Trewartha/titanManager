@@ -1,4 +1,4 @@
-from base import Base,localDBFile,session_scope
+from base import Base,session_scope,engine
 from sqlalchemy import create_engine
 import time
 import os
@@ -15,8 +15,8 @@ def jobStatuses():
 
 
 if __name__ == '__main__':
-    engine = create_engine('sqlite:///'+localDBFile,echo=False)
     with session_scope(engine) as Session:
+	    engine = create_engine('sqlite:///'+os.environ["localDBFile"],echo=False)
         if(len(sys.argv)>1):
             if (sys.argv[1] == 'jobStatuses'):
             	print jobStatuses()
