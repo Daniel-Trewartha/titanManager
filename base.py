@@ -3,13 +3,16 @@ import os
 import sys
 from contextlib import contextmanager
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine,event
+from environment import localDBFile
 
 Base = declarative_base()
-if "localDBFile" in os.environ:
-	engine = create_engine('sqlite:///'+os.environ["localDBFile"],echo=False)
-else:
-	sys.exit("Environment Variables Not Defined")
+engine = create_engine('sqlite:///'+localDBFile,echo=False)
+
+def _fk_pragma_on_connect(dbapi_con, con_record):
+    dbapi_con.execute('pragma foreign_keys=ON')
+
+event.listen(engine, 'connect', _fk_pragma_on_connect)
 
 @contextmanager
 def session_scope(engine):

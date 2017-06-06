@@ -1,3 +1,4 @@
+import prodEnvironment
 import time
 import os
 import job
@@ -28,7 +29,7 @@ def main():
     Session.add(testJob)
     Session.commit()
     testJobFile1 =  jobFile.File(fileName="output.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
-    testJobFile2 =  jobFile.File(fileName="otheroutput.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
+    #testJobFile2 =  jobFile.File(fileName="otheroutput.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
     testJobFile2 =  jobFile.File(fileName="notes.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='input')
     Session.commit()
     testJob.files = [testJobFile1,testJobFile2]

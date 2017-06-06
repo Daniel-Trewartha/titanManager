@@ -110,7 +110,7 @@ class Job(Base):
     def checkOutput(self,Session):
         #Shouldn't do this unless pbs reports C
         if (not self.status == "C"):
-            return "Incomplete"
+            return False
         #check for output existence
         else:
             for oF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'output').all():

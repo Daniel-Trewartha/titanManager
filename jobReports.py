@@ -1,5 +1,4 @@
 from base import Base,session_scope,engine
-from sqlalchemy import create_engine
 import time
 import os
 import job
@@ -12,6 +11,8 @@ def main():
 def jobStatuses():
 	for j in Session.query(job.Job):
 		print j.id, j.jobName, j.status
+	for f in Session.query(jobFile.File):
+		print f.id, f.fileName, f.jobID
 
 
 if __name__ == '__main__':

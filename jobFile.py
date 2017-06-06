@@ -21,9 +21,18 @@ class File(Base):
     ioType = Column('ioType',String)
     job = relationship("Job", back_populates="files")
 
+    def filePath(self):
+        return os.path.join(self.fileDir,self.fileName)
 
     def exists(self,Session):
-        if (os.path.exists(os.path.join(self.fileDir,self.fileName))):
+        if (os.path.exists(self.filePath())):
+            return True
+        else:
+            return False
+
+    def remove(self,Session):
+        if self.exists(Session):
+            os.remove(self.filePath())
             return True
         else:
             return False
@@ -34,5 +43,3 @@ class File(Base):
 def init(target, args, kwargs):
     if(not target.ioType):
         target.ioType = 'output'
-    if(not target.fileDir):
-        target.fileDir = os.path.split(os.path.abspath(__file__))[0]
