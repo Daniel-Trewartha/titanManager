@@ -15,7 +15,7 @@ def updateJobStatus(jobID,status,Session):
 
 def checkJobStatus(jobID,Session):
     thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
-    thisJob.checkStatus()
+    thisJob.checkStatus(Session)
     return "Job status "+str(thisJob.status)
 
 def checkInputFiles(Session):
