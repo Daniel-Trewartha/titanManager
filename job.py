@@ -35,6 +35,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.event import listen
 from sqlalchemy.orm import relationship
 from jobFile import File
+from utilities import stripString
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -125,8 +126,7 @@ class Job(Base):
     @staticmethod
     def _stripJobName(mapper, connection, target):
         if (target.jobName is not None):
-            stripName = "".join(target.jobName.split())
-            target.jobName = stripName
+            target.jobName = stripString(target.jobName)
 #EVENT LISTENERS
 
 #Defaults

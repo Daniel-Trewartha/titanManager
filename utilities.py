@@ -8,3 +8,7 @@ def parseTimeString(timeString):
 	else:
 		tDelta = datetime.timedelta()
 	return tDelta
+
+#Remove all whitespace characters from everywhere in a string or unicode object
+def stripString(stringy):
+	return "".join(stringy.split())

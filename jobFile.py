@@ -9,7 +9,9 @@ from sqlalchemy.orm import mapper
 from sqlalchemy.inspection import inspect
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
-
+from sqlalchemy.event import listen
+from sqlalchemy import exc
+from utilities import stripString
 
 class File(Base):
     __tablename__ = 'files'
@@ -36,3 +38,15 @@ class File(Base):
             return True
         else:
             return False
+
+    @staticmethod
+    def _stripFileNameDir(mapper, connection, target):
+        if (target.fileName is not None):
+            target.fileName = stripString(target.fileName)
+        if (target.fileDir is not None):
+            target.fileDir = stripString(target.fileDir)
+        
+
+#Process filename and dir before inserting
+listen(File, 'before_insert', File._stripFileNameDir)
+listen(File, 'before_update', File._stripFileNameDir)
