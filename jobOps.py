@@ -62,7 +62,7 @@ def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
         j.submit(os.path.abspath(__file__),Session)
 
 if __name__ == '__main__':
-    with session_scope() as Session:
+    with session_scope(engine) as Session:
         Base.metadata.create_all(engine)
         if(len(sys.argv)>1):
             if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
