@@ -21,8 +21,12 @@ class jobTest(unittest.TestCase):
 
 	def tearDown(self):
 		Base.metadata.drop_all(engine)
+		#Clean up job submission scripts from failed tests
+		for f in os.listdir(os.path.split(os.path.abspath(__file__))[0]):
+			if re.search('\S*csh',f):
+				os.remove(f)		
 
-	#qdel a job - prints to stdout only if there is an error
+	#qdel a job
 	def delJob(self,job):
 		if (job.pbsID is not None):
 			cmd = "qdel "+str(job.pbsID)
@@ -41,7 +45,6 @@ class jobTest(unittest.TestCase):
 			self.failUnless(testJob.status == "Submitted")
 			self.failUnless(testJob.pbsID is not None)
 
-			print testJob.pbsID
 			self.failUnless(self.delJob(testJob))
 			for f in os.listdir(os.path.split(os.path.abspath(__file__))[0]):
 				if re.search(testJob.jobName+"\.*",f):

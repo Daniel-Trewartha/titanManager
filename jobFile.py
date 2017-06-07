@@ -18,7 +18,7 @@ class File(Base):
     fileName = Column('fileName',String,nullable=False)
     fileDir = Column('fileDir',String,nullable=False)
     jobID = Column('jobID',Integer,ForeignKey("jobs.id"),nullable=False)
-    ioType = Column('ioType',String)
+    ioType = Column('ioType',String,default="output")
     Job = relationship("Job", back_populates="files")
 
     def filePath(self):
@@ -36,10 +36,3 @@ class File(Base):
             return True
         else:
             return False
-#EVENT LISTENERS
-
-#Defaults
-@event.listens_for(File,"init")
-def init(target, args, kwargs):
-    if(not target.ioType):
-        target.ioType = 'output'

@@ -32,6 +32,7 @@ from sqlalchemy import event
 from sqlalchemy.orm import mapper
 from sqlalchemy.inspection import inspect
 from sqlalchemy import ForeignKey
+from sqlalchemy.event import listen
 from sqlalchemy.orm import relationship
 from jobFile import File
 
@@ -39,10 +40,10 @@ class Job(Base):
     __tablename__ = 'jobs'
         
     id = Column(Integer, primary_key=True)
-    jobName = Column('jobName',String)
-    executionCommand = Column('executionCommand',String)
-    nodes = Column('nodes',Integer)
-    wallTime = Column('wallTime',Interval)
+    jobName = Column('jobName',String,default='default')
+    executionCommand = Column('executionCommand',String,default="echo 'No Execution Command'")
+    nodes = Column('nodes',Integer,default=1)
+    wallTime = Column('wallTime',Interval,default=datetime.timedelta(hours=1))
     status = Column('status',String)
     pbsID = Column('pbsID',Integer)
     files = relationship("File", back_populates="Job")
@@ -74,13 +75,15 @@ class Job(Base):
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
         pbsID = pbsSubmit.stdout.read().strip()
-        if (pbsID is not None):
+        try:
+            int(pbsID)
+        except ValueError:
+            return False
+        else:
             self.pbsID = pbsID
             self.status = "Submitted"
             Session.commit()
             return True
-        else:
-            return False
 
     def checkStatus(self,Session):
         status = self.status
@@ -119,21 +122,19 @@ class Job(Base):
                 return False
         return True
 
+    @staticmethod
+    def _stripJobName(mapper, connection, target):
+        if (target.jobName is not None):
+            stripName = "".join(target.jobName.split())
+            target.jobName = stripName
 #EVENT LISTENERS
 
 #Defaults
 @event.listens_for(Job,"init")
 def init(target, args, kwargs):
     target.status = "Accepted"
-    if(not target.jobName):
-        target.jobName = "Default"
-    #remove any nasty characters from jobnames
-    stripName = "".join(target.jobName.split())
-    target.jobName = stripName
-    if(not target.executionCommand):
-        target.executionCommand = "echo 'No Execution Command'"
-    if(not target.nodes):
-        target.nodes = 1
-    if(not target.wallTime):
-        target.wallTime = datetime.timedelta(hours=1)                
     target.pbsID = None
+
+#Process jobname before inserting
+listen(Job, 'before_insert', Job._stripJobName)
+listen(Job, 'before_update', Job._stripJobName)
