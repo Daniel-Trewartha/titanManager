@@ -10,7 +10,7 @@ from jobFile import File
 from job import Job
 from base import Base,session_scope,engine
 from sqlalchemy import exc
-from testUtils import assertIntegrityError
+from testUtils import assertIntegrityError,dummyFile
 from faker import Faker
 
 class jobFileTest(unittest.TestCase):
@@ -65,9 +65,19 @@ class jobFileTest(unittest.TestCase):
 			self.failUnless(not testFile.exists(Session))
 			self.failUnless(not testFile.remove(Session))
 
-			with open(testFile.filePath(),'w') as f:
-				f.write("test test")
+			dummyFile(testFile.filePath())
 			self.failUnless(testFile.exists(Session))
+			self.failUnless(testFile.remove(Session))
+			self.failUnless(not testFile.exists(Session))
+
+	def test_file_remove(self):
+		with session_scope(engine) as Session:
+			testJob = self.insertTestJob(Session)
+			testFile = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
+			Session.add(testFile)
+			Session.commit()
+
+			dummyFile(testFile.filePath())
 			self.failUnless(testFile.remove(Session))
 			self.failUnless(not testFile.exists(Session))
 

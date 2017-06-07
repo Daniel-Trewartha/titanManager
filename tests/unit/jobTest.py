@@ -11,6 +11,7 @@ from job import Job
 from base import Base,session_scope,engine
 from sqlalchemy import exc
 from faker import Faker
+from testUtils import dummyFile
 
 class jobTest(unittest.TestCase):
 	def setUp(self):
@@ -20,16 +21,89 @@ class jobTest(unittest.TestCase):
 	def tearDown(self):
 		Base.metadata.drop_all(engine)
 
+	#qdel a job - prints to stdout only if there is an error
+	def delJob(self,job):
+		if (job.pbsID):
+			cmd = "qdel "+job.pbsID
+			qdel = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
+			response = pbsSubmit.stdout.read().strip()
+			if response:
+				return False
+			else:
+				return True
+		return False
+
 	def test_job_submission(self):
 		with session_scope(engine) as Session:
 			testJob = Job()
 			Session.add(testJob)
 			Session.commit()
 			
-			q = Session.query(File).filter(File.jobID == testJob.id)
-			self.failUnless(Session.query(q.exists()))
+			#submit a fake path for job manager path - we are not testing the job manager here
+			self.failUnless(testJob.submit(self.fake.file_path(depth=3),Session))
+			self.failUnless(testJob.status == "Submitted")
+			self.failUnless(testJob.pbsID is not None)
 
-			self.failUnless(testJob.files[0].id == testFile.id)
+			self.failUnless(self.delJob(testJob))
+
+	def test_check_output(self):
+		with session_scope(engine) as Session:
+			testJob = Job()
+			Session.add(testJob)
+			Session.commit()
+			testFile1 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
+			testFile2 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
+			testFile3 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='input')
+			Session.add(testFile1)
+			Session.add(testFile2)
+			Session.add(testFile3)
+			Session.commit()
+
+			#output files expected but do not exist
+			self.failUnless(not testJob.checkOutput(Session))
+
+			#output files expected but only some exist
+			dummyFile(testFile1.filePath())
+			self.failUnless(not testJob.checkOutput(Session))
+
+			#output files expected, all exist, but input files do not
+			dummyFile(testFile2.filePath())
+			self.failUnless(testJob.checkOutput(Session))
+			os.remove(testFile1.filePath())
+			os.remove(testFile2.filePath())
+
+	def test_check_status(self):
+		with session_scope(engine) as Session:
+			testJob = Job()
+			testJob.status = 'Submitted'
+			#Dummy pbsID  - test real PBS IDs in integration tests
+			testJob.pbsID = 1
+			Session.add(testJob)
+			Session.commit()
+
+			#Status is submitted, no pbs output - should be failed
+			self.failUnless(testJob.checkStatus(Session) == 'Failed')
+
+			#Status is submitted, pbs output exists, no output files expected - should be successful
+			testJob.status = 'Submitted'
+			Session.commit()
+			dummyFile(testJob.jobName+".o"+str(testJob.pbsID))
+			self.failUnless(testJob.checkStatus(Session) == "Successful")
+			os.remove(testJob.jobName+".o"+str(testJob.pbsID))
+
+			#Status is C, pbs output exists, output files expected but do not exist - should be failed
+			testFile = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
+			Session.add(testFile)
+			testJob.status = 'C'
+			Session.commit()
+			self.failUnless(testJob.checkStatus(Session) == "Failed")
+
+			#Status is C, pbs output exists, output files expected and exist - should be successful
+			testJob.status = 'C'
+			dummyFile(testFile.filePath())
+			Session.commit()
+			self.failUnless(testJob.checkStatus(Session) == "Successful")
+			os.remove(testFile.filePath())
 
 if __name__ == '__main__':
     unittest.main()

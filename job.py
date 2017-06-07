@@ -32,6 +32,7 @@ from sqlalchemy.orm import mapper
 from sqlalchemy.inspection import inspect
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
+from jobFile import File
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -43,7 +44,7 @@ class Job(Base):
     wallTime = Column('wallTime',Interval)
     status = Column('status',String)
     pbsID = Column('pbsID',Integer)
-    files = relationship("File", back_populates="job")
+    files = relationship("File", back_populates="Job")
 
     def submit(self,jobManagerPath,Session):
         ##Create script with appropriate information
@@ -74,15 +75,20 @@ class Job(Base):
             script.write("deactivate\n")
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-        self.pbsID = pbsSubmit.stdout.read().strip()
-        self.status = "Submitted"
-        Session.commit()
+        pbsID = pbsSubmit.stdout.read().strip()
+        if (pbsID is not None):
+            self.pbsID = pbsID
+            self.status = "Submitted"
+            Session.commit()
+            return True
+        else:
+            return False
 
     def checkStatus(self,Session):
         status = self.status
         #If submitted but not yet run, do a qstat
         #Should avoid triggering this if at all possible
-        if (status == 'Submitted'):
+        if (status == 'Submitted' and self.pbsID is not None):
             cmd = "qstat -f "+str(self.pbsID)+" | grep 'job_state'"
             pbsCMD = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsStatus = pbsCMD.stdout.read()
@@ -91,9 +97,9 @@ class Job(Base):
                 self.status = status
             else:
                 #if you have a pbs id but qstat is null, you've run
-                if (os.path.exists(self.jobName+".o"+self.pbsID)):
+                if (os.path.exists(self.jobName+".o"+str(self.pbsID))):
                     status = "C"
-                #this should never have to run
+                #you have a pbs id but no output - bad
                 else:
                     status = "Failed"
         #If your pbs status is C, check to see if the output files exist
@@ -108,15 +114,11 @@ class Job(Base):
         return status
 
     def checkOutput(self,Session):
-        #Shouldn't do this unless pbs reports C
-        if (not self.status == "C"):
-            return False
-        #check for output existence
-        else:
-            for oF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'output').all():
-                if (not oF.exists()):
-                    return False
-            return True
+        #check for output file existence
+        for oF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'output').all():
+            if (not oF[1].exists(Session)):
+                return False
+        return True
 
 #EVENT LISTENERS
 

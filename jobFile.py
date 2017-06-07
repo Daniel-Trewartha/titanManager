@@ -19,7 +19,7 @@ class File(Base):
     fileDir = Column('fileDir',String,nullable=False)
     jobID = Column('jobID',Integer,ForeignKey("jobs.id"),nullable=False)
     ioType = Column('ioType',String)
-    job = relationship("Job", back_populates="files")
+    Job = relationship("Job", back_populates="files")
 
     def filePath(self):
         return os.path.join(self.fileDir,self.fileName)
