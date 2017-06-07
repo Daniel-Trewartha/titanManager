@@ -7,24 +7,24 @@ from datetime import timedelta
 import pbsManager
 from base import Base,session_scope,engine
 
+#An externally callable job update routine
 def updateJobStatus(jobID,status,Session):
     thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
     thisJob.status = status
     Session.commit()
     return "Updated job id "+jobID+" to "+str(status)
 
+#Externally callable job status checker
 def checkJobStatus(jobID,Session):
     thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
     thisJob.checkStatus(Session)
     return "Job status "+str(thisJob.status)
 
+#Check whether input files are present for all jobs
 def checkInputFiles(Session):
     eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Accepted")
     for j in eligibleJobs:
-        inputPresent = True
-        for dummy,iF in Session.query(job.Job,jobFile.File).filter(job.Job.id == j.id).filter(jobFile.File.jobID == j.id).filter(jobFile.File.ioType == 'input').all():
-                if (not iF.exists(Session)):
-                    inputPresent = False
+        inputPresent = j.checkInput(Session)
         if (inputPresent):
             j.status = "Ready"
         else:

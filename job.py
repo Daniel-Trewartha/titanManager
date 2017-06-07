@@ -118,8 +118,15 @@ class Job(Base):
 
     def checkOutput(self,Session):
         #check for output file existence
-        for oF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'output').all():
-            if (not oF[1].exists(Session)):
+        for dummy,oF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'output').all():
+            if (not oF.exists(Session)):
+                return False
+        return True
+
+    def checkInput(self,Session):
+        #check for input file existence
+        for dummy,iF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'input').all():
+            if (not iF.exists(Session)):
                 return False
         return True
 

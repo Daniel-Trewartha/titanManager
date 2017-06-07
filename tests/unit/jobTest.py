@@ -50,7 +50,7 @@ class jobTest(unittest.TestCase):
 				if re.search(testJob.jobName+"\.*",f):
 					os.remove(f)
 
-	def test_check_output(self):
+	def test_check_input_output(self):
 		with session_scope(engine) as Session:
 			testJob = Job()
 			Session.add(testJob)
@@ -58,6 +58,7 @@ class jobTest(unittest.TestCase):
 			testFile1 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
 			testFile2 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
 			testFile3 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='input')
+			testFile4 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='input')
 			Session.add(testFile1)
 			Session.add(testFile2)
 			Session.add(testFile3)
@@ -75,6 +76,19 @@ class jobTest(unittest.TestCase):
 			self.failUnless(testJob.checkOutput(Session))
 			os.remove(testFile1.filePath())
 			os.remove(testFile2.filePath())
+
+			#input files expected but do not exist
+			self.failUnless(not testJob.checkInput(Session))
+
+			#input files expected but only some exist
+			dummyFile(testFile3.filePath())
+			self.failUnless(not testJob.checkInput(Session))
+
+			#input files expected, all exist, but output files do not
+			dummyFile(testFile4.filePath())
+			self.failUnless(testJob.checkInput(Session))
+			os.remove(testFile3.filePath())
+			os.remove(testFile4.filePath())
 
 	def test_check_status(self):
 		with session_scope(engine) as Session:
