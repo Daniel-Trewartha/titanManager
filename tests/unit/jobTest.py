@@ -1,5 +1,6 @@
 import unittest
-import os,sys,inspect
+import os,sys,inspect,re
+import subprocess
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 parentparentdir = os.path.dirname(parentdir)
@@ -23,19 +24,15 @@ class jobTest(unittest.TestCase):
 
 	#qdel a job - prints to stdout only if there is an error
 	def delJob(self,job):
-		if (job.pbsID):
-			cmd = "qdel "+job.pbsID
+		if (job.pbsID is not None):
+			cmd = "qdel "+str(job.pbsID)
 			qdel = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-			response = pbsSubmit.stdout.read().strip()
-			if response:
-				return False
-			else:
-				return True
+			return True
 		return False
 
 	def test_job_submission(self):
 		with session_scope(engine) as Session:
-			testJob = Job()
+			testJob = Job(jobName=self.fake.job())
 			Session.add(testJob)
 			Session.commit()
 			
@@ -44,7 +41,11 @@ class jobTest(unittest.TestCase):
 			self.failUnless(testJob.status == "Submitted")
 			self.failUnless(testJob.pbsID is not None)
 
+			print testJob.pbsID
 			self.failUnless(self.delJob(testJob))
+			for f in os.listdir(os.path.split(os.path.abspath(__file__))[0]):
+				if re.search(testJob.jobName+"\.*",f):
+					os.remove(f)
 
 	def test_check_output(self):
 		with session_scope(engine) as Session:
@@ -81,7 +82,7 @@ class jobTest(unittest.TestCase):
 			Session.add(testJob)
 			Session.commit()
 
-			#Status is submitted, no pbs output - should be failed
+			#Status is submitted, no pbs output, no qstat result - should fail
 			self.failUnless(testJob.checkStatus(Session) == 'Failed')
 
 			#Status is submitted, pbs output exists, no output files expected - should be successful

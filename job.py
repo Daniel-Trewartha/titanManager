@@ -90,7 +90,8 @@ class Job(Base):
             cmd = "qstat -f "+str(self.pbsID)+" | grep 'job_state'"
             pbsCMD = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsStatus = pbsCMD.stdout.read()
-            if (pbsStatus):
+            if (not str.split(pbsStatus) == []):
+                pbsStatus = str.split(pbsStatus)[2]
                 status = str.split(pbsStatus)[2]
                 self.status = status
             else:
@@ -102,7 +103,7 @@ class Job(Base):
                     status = "Failed"
         #If your pbs status is C, check to see if the output files exist
         if(status == "C"):
-            if(self.checkOutput):
+            if(self.checkOutput(Session)):
                 status = "Successful"
             else:
                 status = "Failed"
@@ -126,6 +127,9 @@ def init(target, args, kwargs):
     target.status = "Accepted"
     if(not target.jobName):
         target.jobName = "Default"
+    #remove any nasty characters from jobnames
+    stripName = "".join(target.jobName.split())
+    target.jobName = stripName
     if(not target.executionCommand):
         target.executionCommand = "echo 'No Execution Command'"
     if(not target.nodes):
