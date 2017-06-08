@@ -1,7 +1,7 @@
 import time
 import os
-import job
-import jobFile
+from job import Job
+from jobFile import File
 import sys
 from datetime import timedelta
 import pbsManager
@@ -9,20 +9,22 @@ from base import Base,session_scope,engine
 
 #An externally callable job update routine
 def updateJobStatus(jobID,status,Session):
-    thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
+    for j in Session.query(Job).all():
+        print j.id
+    thisJob = Session.query(Job).filter(Job.id == jobID).one()
     thisJob.status = status
     Session.commit()
     return "Updated job id "+jobID+" to "+str(status)
 
 #Externally callable job status checker
 def checkJobStatus(jobID,Session):
-    thisJob = Session.query(job.Job).filter(job.Job.id == jobID).one()
+    thisJob = Session.query(Job).filter(Job.id == jobID).one()
     thisJob.checkStatus(Session)
     return "Job status "+str(thisJob.status)
 
 #Check whether input files are present for all jobs
 def checkInputFiles(Session):
-    eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Accepted")
+    eligibleJobs = Session.query(Job).filter(Job.status == "Accepted")
     for j in eligibleJobs:
         inputPresent = j.checkInput(Session)
         if (inputPresent):
@@ -36,26 +38,29 @@ def submitJobs(isWallTimeRestricted, isNodeRestricted,Session):
     #Submit jobs, optionally only those that fit on current free resources
     checkInputFiles(Session)
     nodes, minWallTime = pbsManager.getFreeResources()
+    submitList = []
     print "Available Resources: ", nodes, minWallTime
-    eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Ready")
+    eligibleJobs = Session.query(Job).filter(Job.status == "Ready")
     if(isNodeRestricted):
-        eligibleJobs.filter(job.Job.nodes <= nodes)
+        eligibleJobs.filter(Job.nodes <= nodes)
     if (isWallTimeRestricted):
-        eligibleJobs.filter(job.Job.wallTime < minWallTime)
+        eligibleJobs.filter(Job.wallTime < minWallTime)
     for j in eligibleJobs:
         print "Submitting"
         print j.id, j.jobName
+        submitList.append(j.id)
         j.submit(os.path.abspath(__file__),Session)
+    return submitList
 
 def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
     #Rerun Failed jobs, optionally only those that fit on current free resources
     nodes, minWallTime = pbsManager.getFreeResources()
     print "Available Resources: ", nodes, minWallTime
-    eligibleJobs = Session.query(job.Job).filter(job.Job.status == "Failed")
+    eligibleJobs = Session.query(Job).filter(Job.status == "Failed")
     if(isNodeRestricted):
-        eligibleJobs.filter(job.Job.nodes <= nodes)
+        eligibleJobs.filter(Job.nodes <= nodes)
     if (isWallTimeRestricted):
-        eligibleJobs.filter(job.Job.wallTime < minWallTime)
+        eligibleJobs.filter(Job.wallTime < minWallTime)
     for j in eligibleJobs:
         print "Submitting"
         print j.id, j.jobName
