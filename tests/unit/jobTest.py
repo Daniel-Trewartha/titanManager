@@ -62,6 +62,7 @@ class jobTest(unittest.TestCase):
 			Session.add(testFile1)
 			Session.add(testFile2)
 			Session.add(testFile3)
+			Session.add(testFile4)
 			Session.commit()
 
 			#output files expected but do not exist

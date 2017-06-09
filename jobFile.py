@@ -11,7 +11,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.event import listen
 from sqlalchemy import exc
-from utilities import stripString
+from utilities import stripWhiteSpace,stripSlash
 
 class File(Base):
     __tablename__ = 'files'
@@ -42,9 +42,9 @@ class File(Base):
     @staticmethod
     def _stripFileNameDir(mapper, connection, target):
         if (target.fileName is not None):
-            target.fileName = stripString(target.fileName)
+            target.fileName = stripSlash(stripWhiteSpace(target.fileName))
         if (target.fileDir is not None):
-            target.fileDir = stripString(target.fileDir)
+            target.fileDir = stripWhiteSpace(target.fileDir)
         
 
 #Process filename and dir before inserting

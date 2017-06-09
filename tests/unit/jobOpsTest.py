@@ -81,16 +81,16 @@ class jobTest(unittest.TestCase):
 				if re.search(testJob.jobName+"\.*",f):
 					os.remove(f)
 
-	def test_job_submission(self):
+	def test_failed_job_submission(self):
 		#To do: test walltime and node restriction
 		with session_scope(engine) as Session:
-			self.failUnless(jobOps.submitJobs(False,False,Session) == [])
+			self.failUnless(jobOps.rerunFailedJobs(False,False,Session) == [])
 			testJob = Job(jobName=self.fake.job(),nodes=1)
 			Session.add(testJob)
 			testJob.status = 'Failed'
 			Session.commit()
 			
-			self.failUnless(jobOps.submitJobs(False,False,Session) == [testJob.id])
+			self.failUnless(jobOps.rerunFailedJobs(False,False,Session) == [testJob.id])
 			self.failUnless(testJob.status == "Submitted")
 			self.failUnless(testJob.pbsID is not None)
 

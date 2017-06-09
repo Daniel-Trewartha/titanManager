@@ -9,6 +9,11 @@ def parseTimeString(timeString):
 		tDelta = datetime.timedelta()
 	return tDelta
 
-#Remove all whitespace characters from everywhere in a string or unicode object
-def stripString(stringy):
-	return "".join(stringy.split())
+#Remove all whitespace from everywhere in a string or unicode object
+def stripWhiteSpace(stringy):
+	noWhiteSpace = "".join(stringy.split())
+	return noWhiteSpace
+
+def stripSlash(stringy):
+	noSlash = stringy.replace("/","").replace("\\","")
+	return noSlash

@@ -57,6 +57,7 @@ def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
     nodes, minWallTime = pbsManager.getFreeResources()
     print "Available Resources: ", nodes, minWallTime
     eligibleJobs = Session.query(Job).filter(Job.status == "Failed")
+    submitList = []
     if(isNodeRestricted):
         eligibleJobs.filter(Job.nodes <= nodes)
     if (isWallTimeRestricted):
@@ -65,6 +66,8 @@ def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
         print "Submitting"
         print j.id, j.jobName
         j.submit(os.path.abspath(__file__),Session)
+        submitList.append(j.id)
+    return submitList
 
 if __name__ == '__main__':
     with session_scope(engine) as Session:
