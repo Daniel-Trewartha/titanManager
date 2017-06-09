@@ -1,9 +1,9 @@
-from sqlalchemy.ext.declarative import declarative_base
-import os
-import sys
+import os,sys
+sys.path.append(os.path.abspath('../env'))
 from contextlib import contextmanager
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine,event
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from environment import localDBFile
 
 Base = declarative_base()

@@ -1,16 +1,9 @@
-import unittest
-import os,sys,inspect,re
-import subprocess
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-parentparentdir = os.path.dirname(parentdir)
-sys.path.insert(0,parentdir) 
-sys.path.insert(0,parentparentdir)
+import os,sys,inspect,re,subprocess,unittest 
+sys.path.append(os.path.abspath('../'))
+sys.path.append(os.path.abspath('../../models'))
+sys.path.append(os.path.abspath('../../env'))
+sys.path.append(os.path.abspath('../../src'))
 import testEnvironment
-from jobFile import File
-from job import Job
-from base import Base,session_scope,engine
-from sqlalchemy import exc
 from faker import Faker
 from testUtils import dummyFile
 
@@ -125,4 +118,8 @@ class jobTest(unittest.TestCase):
 			os.remove(testFile.filePath())
 
 if __name__ == '__main__':
-    unittest.main()
+	testEnvironment.setEnvironment()
+	from jobFile import File
+	from job import Job
+	from base import Base,session_scope,engine
+	unittest.main()

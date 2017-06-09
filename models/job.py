@@ -1,41 +1,15 @@
-
-#Job object:
-    #Columns:
-    #setup commands?
-    #executable
-    #aprun options
-    #resources (nodes and time)
-    #received date
-    #status
-    #run date (list?)
-    #input
-    #output
-    #pbs id (list?)
-
-    #methods:
-    #create
-    #getters/setters
-    #check status
-    #submit
-    #cancel
-    #check input/output files
-
-from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON
-import datetime
-import os
+#Remove dependency on jobFile - use files attribute instead
+import datetime, os, sys, subprocess
+sys.path.append(os.path.abspath('../src'))
+sys.path.append(os.path.abspath('../env'))
+from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import *
+from sqlalchemy.orm import relationship, mapper, joinedload
+from sqlalchemy.inspection import inspect
+from sqlalchemy.event import listen
 from base import Base
 from environment import virtualEnvPath
-import subprocess
-from sqlalchemy import event
-from sqlalchemy.orm import mapper
-from sqlalchemy.inspection import inspect
-from sqlalchemy import ForeignKey
-from sqlalchemy.event import listen
-from sqlalchemy.orm import relationship
-from jobFile import File
-from utilities import stripWhiteSpace,stripSlash
+from stringUtilities import stripWhiteSpace,stripSlash
 
 class Job(Base):
     __tablename__ = 'jobs'
@@ -118,14 +92,15 @@ class Job(Base):
 
     def checkOutput(self,Session):
         #check for output file existence
-        for dummy,oF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'output').all():
+        for oF in [oF for oF in self.files if oF.ioType == 'output']:
             if (not oF.exists(Session)):
                 return False
         return True
 
     def checkInput(self,Session):
         #check for input file existence
-        for dummy,iF in Session.query(Job,File).filter(Job.id == self.id).filter(File.jobID == self.id).filter(File.ioType == 'input').all():
+        #Apparently in memory is the only way to do this
+        for iF in [iF for iF in self.files if iF.ioType == 'input']:
             if (not iF.exists(Session)):
                 return False
         return True

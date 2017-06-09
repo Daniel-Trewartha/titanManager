@@ -1,19 +1,10 @@
-import unittest
-import os,sys,inspect,re,time
-import subprocess
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parentdir = os.path.dirname(currentdir)
-parentparentdir = os.path.dirname(parentdir)
-sys.path.insert(0,parentdir) 
-sys.path.insert(0,parentparentdir)
+import os,sys,time,subprocess,unittest
+sys.path.append(os.path.abspath('../'))
+sys.path.append(os.path.abspath('../../models'))
+sys.path.append(os.path.abspath('../../env'))
+sys.path.append(os.path.abspath('../../src'))
 import testEnvironment
-import jobOps
-from jobFile import File
-from job import Job
-from base import Base,session_scope,engine
 from faker import Faker
-from testUtils import dummyFile
-from environment import virtualEnvPath
 
 class jobTest(unittest.TestCase):
 	def setUp(self):
@@ -101,4 +92,11 @@ class jobTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+	testEnvironment.setEnvironment()
+	from environment import virtualEnvPath
+	from jobFile import File
+	from job import Job
+	import jobOps
+	from base import Base,session_scope,engine
+	from testUtils import dummyFileu
+	unittest.main()

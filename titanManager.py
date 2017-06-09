@@ -1,14 +1,10 @@
-import prodEnvironment
-import time
-import os
-import job
-import jobFile
-import sys
-from datetime import timedelta
-from base import Base,session_scope,engine
-from jobOps import submitJobs
-import utilities
-import pbsManager
+import os, time, sys
+from models.job import Job
+from models.jobFile import File
+from src.base import Base, session_scope, engine
+from src.jobOps import submitJobs
+from env import prodEnvironment
+from src.stringUtilities import parseTimeString
 
 def main():
     #xml input
@@ -23,14 +19,14 @@ def main():
     outputDir = os.path.split(os.path.abspath(__file__))[0]
     outputFiles = ["output.txt","otheroutput.txt"]
     wallTime = "00:00:10"
-    wT = utilities.parseTimeString(wallTime)
+    wT = parseTimeString(wallTime)
     eC = "echo 'test' >> "+os.path.join(outputDir,outputFiles[0])+"\n echo 'test' >> "+os.path.join(outputDir,outputFiles[1])
-    testJob = job.Job(jobName="TestJob",executionCommand=eC,wallTime=wT)
+    testJob = Job(jobName="TestJob",executionCommand=eC,wallTime=wT)
     Session.add(testJob)
     Session.commit()
-    testJobFile1 =  jobFile.File(fileName="output.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
+    testJobFile1 = File(fileName="output.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
     #testJobFile2 =  jobFile.File(fileName="otheroutput.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='output')
-    testJobFile2 =  jobFile.File(fileName="notes.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='input')
+    testJobFile2 = File(fileName="notes.txt",fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id,ioType='input')
     Session.commit()
     testJob.files = [testJobFile1,testJobFile2]
     print testJob.files
@@ -41,6 +37,7 @@ def main():
     print testJob.pbsID,testJob.status
 
 if __name__ == '__main__':
+    prodEnvironment.setEnvironment()
     with session_scope(engine) as Session:
         Base.metadata.create_all(engine)
         main()

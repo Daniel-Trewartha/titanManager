@@ -1,17 +1,13 @@
-from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON
-import datetime
-import os
+import datetime, os, sys
+sys.path.append(os.path.abspath('../src'))
+sys.path.append(os.path.abspath('../env'))
+from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, exc, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import *
-from base import Base
-from sqlalchemy import event
-from sqlalchemy.orm import mapper
+from sqlalchemy.orm import relationship, mapper
 from sqlalchemy.inspection import inspect
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
 from sqlalchemy.event import listen
-from sqlalchemy import exc
-from utilities import stripWhiteSpace,stripSlash
+from base import Base
+from stringUtilities import stripWhiteSpace,stripSlash
 
 class File(Base):
     __tablename__ = 'files'

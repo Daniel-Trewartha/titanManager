@@ -1,9 +1,10 @@
-import time
-import os
+#Separate out the executable functionality
+
+import os, time, sys, datetime
+sys.path.append(os.path.abspath('../models'))
+from datetime import timedelta
 from job import Job
 from jobFile import File
-import sys
-from datetime import timedelta
 import pbsManager
 from base import Base,session_scope,engine
 

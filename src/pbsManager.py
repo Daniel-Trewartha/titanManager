@@ -1,8 +1,6 @@
-import os
-import sys
-import subprocess
-import datetime
-import utilities
+import os, sys, subprocess, datetime
+sys.path.append(os.path.abspath('../env'))
+import stringUtilities
 from environment import totalNodes
 
 def main():
