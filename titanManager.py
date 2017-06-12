@@ -1,9 +1,9 @@
 import os, time, sys
+from env import prodEnvironment
 from models.job import Job
 from models.jobFile import File
 from src.base import Base, session_scope, engine
 from src.jobOps import submitJobs
-from env import prodEnvironment
 from src.stringUtilities import parseTimeString
 
 def main():

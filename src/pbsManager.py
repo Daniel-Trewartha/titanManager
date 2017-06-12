@@ -1,6 +1,6 @@
 import os, sys, subprocess, datetime
 sys.path.insert(0, os.path.abspath('..'))
-import src.stringUtilities
+import src.stringUtilities as stringUtilities
 from env.environment import totalNodes
 
 def main():
@@ -16,7 +16,7 @@ def getFreeResources():
 		if (len(sLine) == 11):
 			if(int(sLine[5])):
 				freeNodes -= int(sLine[5])
-			wallTime = utilities.parseTimeString(str.split(line)[8]) - utilities.parseTimeString(str.split(line)[10])
+			wallTime = stringUtilities.parseTimeString(str.split(line)[8]) - stringUtilities.parseTimeString(str.split(line)[10])
 			if (wallTime < minWallTime and wallTime.total_seconds() > 0):
 				minWallTime = wallTime
 	return freeNodes, minWallTime
