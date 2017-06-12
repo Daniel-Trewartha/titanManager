@@ -1,11 +1,8 @@
 import os,sys,inspect,re,subprocess,unittest 
-sys.path.append(os.path.abspath('../'))
-sys.path.append(os.path.abspath('../../models'))
-sys.path.append(os.path.abspath('../../env'))
-sys.path.append(os.path.abspath('../../src'))
-import testEnvironment
+sys.path.insert(0, os.path.abspath('../..'))
+import env.testEnvironment as testEnvironment
 from faker import Faker
-from testUtils import dummyFile
+from tests.testUtils import dummyFile
 
 class jobTest(unittest.TestCase):
 	def setUp(self):
@@ -119,7 +116,7 @@ class jobTest(unittest.TestCase):
 
 if __name__ == '__main__':
 	testEnvironment.setEnvironment()
-	from jobFile import File
-	from job import Job
-	from base import Base,session_scope,engine
+	from models.jobFile import File
+	from models.job import Job
+	from src.base import Base,session_scope,engine
 	unittest.main()

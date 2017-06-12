@@ -1,13 +1,12 @@
 import datetime, os, sys
-sys.path.append(os.path.abspath('../src'))
-sys.path.append(os.path.abspath('../env'))
+sys.path.insert(0, os.path.abspath('..'))
 from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, exc, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, mapper
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
-from base import Base
-from stringUtilities import stripWhiteSpace,stripSlash
+from src.base import Base
+from src.stringUtilities import stripWhiteSpace,stripSlash
 
 class File(Base):
     __tablename__ = 'files'

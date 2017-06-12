@@ -1,12 +1,12 @@
 #Separate out the executable functionality
 
 import os, time, sys, datetime
-sys.path.append(os.path.abspath('../models'))
+sys.path.insert(0, os.path.abspath('..'))
 from datetime import timedelta
-from job import Job
-from jobFile import File
-import pbsManager
-from base import Base,session_scope,engine
+from models.job import Job
+from models.jobFile import File
+import src.pbsManager as pbsManager
+from src.base import Base,session_scope,engine
 
 #An externally callable job update routine
 def updateJobStatus(jobID,status,Session):

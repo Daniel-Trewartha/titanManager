@@ -1,12 +1,9 @@
 import os, sys
-sys.path.append(os.path.abspath('../'))
-sys.path.append(os.path.abspath('../../models'))
-sys.path.append(os.path.abspath('../../env'))
-sys.path.append(os.path.abspath('../../src'))
+sys.path.insert(0, os.path.abspath('../..'))
 import unittest
 from faker import Faker
-import testEnvironment
-from testUtils import assertIntegrityError,dummyFile
+import env.testEnvironment as testEnvironment
+from tests.testUtils import assertIntegrityError,dummyFile
 
 class jobFileTest(unittest.TestCase):
 	def setUp(self):
@@ -78,7 +75,7 @@ class jobFileTest(unittest.TestCase):
 
 if __name__ == '__main__':
 	testEnvironment.setEnvironment()
-	from jobFile import File
-	from job import Job
-	from base import Base,session_scope,engine
+	from models.jobFile import File
+	from models.job import Job
+	from src.base import Base,session_scope,engine
 	unittest.main()

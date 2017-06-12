@@ -1,15 +1,14 @@
 #Remove dependency on jobFile - use files attribute instead
 import datetime, os, sys, subprocess
-sys.path.append(os.path.abspath('../src'))
-sys.path.append(os.path.abspath('../env'))
+sys.path.insert(0, os.path.abspath('..'))
 from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
-from base import Base
-from environment import virtualEnvPath
-from stringUtilities import stripWhiteSpace,stripSlash
+from src.base import Base
+from env.environment import virtualEnvPath
+from src.stringUtilities import stripWhiteSpace,stripSlash
 
 class Job(Base):
     __tablename__ = 'jobs'

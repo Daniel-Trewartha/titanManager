@@ -1,7 +1,7 @@
 import os, sys, subprocess, datetime
-sys.path.append(os.path.abspath('../env'))
-import stringUtilities
-from environment import totalNodes
+sys.path.insert(0, os.path.abspath('..'))
+import src.stringUtilities
+from env.environment import totalNodes
 
 def main():
 	print "Commands for pbs"

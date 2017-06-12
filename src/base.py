@@ -1,10 +1,10 @@
 import os,sys
-sys.path.append(os.path.abspath('../env'))
+sys.path.insert(0, os.path.abspath('..'))
 from contextlib import contextmanager
 from sqlalchemy import create_engine,event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from environment import localDBFile
+from env.environment import localDBFile
 
 Base = declarative_base()
 engine = create_engine('sqlite:///'+localDBFile,echo=False)
