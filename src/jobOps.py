@@ -8,21 +8,6 @@ from models.jobFile import File
 import src.pbsManager as pbsManager
 from src.base import Base,session_scope,engine
 
-#An externally callable job update routine
-def updateJobStatus(jobID,status,Session):
-    for j in Session.query(Job).all():
-        print j.id
-    thisJob = Session.query(Job).filter(Job.id == jobID).one()
-    thisJob.status = status
-    Session.commit()
-    return "Updated job id "+jobID+" to "+str(status)
-
-#Externally callable job status checker
-def checkJobStatus(jobID,Session):
-    thisJob = Session.query(Job).filter(Job.id == jobID).one()
-    thisJob.checkStatus(Session)
-    return "Job status "+str(thisJob.status)
-
 #Check whether input files are present for all jobs
 def checkInputFiles(Session):
     eligibleJobs = Session.query(Job).filter(Job.status == "Accepted")
@@ -50,7 +35,7 @@ def submitJobs(isWallTimeRestricted, isNodeRestricted,Session):
         print "Submitting"
         print j.id, j.jobName
         submitList.append(j.id)
-        j.submit(os.path.abspath(__file__),Session)
+        j.submit(Session)
     return submitList
 
 def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
@@ -66,17 +51,6 @@ def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
     for j in eligibleJobs:
         print "Submitting"
         print j.id, j.jobName
-        j.submit(os.path.abspath(__file__),Session)
+        j.submit(Session)
         submitList.append(j.id)
     return submitList
-
-if __name__ == '__main__':
-    with session_scope(engine) as Session:
-        Base.metadata.create_all(engine)
-        if(len(sys.argv)>1):
-            if (sys.argv[1] == 'updateJobStatus' and len(sys.argv) == 4):
-                print updateJobStatus(sys.argv[2],sys.argv[3],Session)
-            elif (sys.argv[1] == 'checkJobStatus' and len(sys.argv) == 3):
-                print checkJobStatus(sys.argv[2],Session)
-        else:
-            print("Job Operations")

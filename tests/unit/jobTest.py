@@ -33,8 +33,7 @@ class jobTest(unittest.TestCase):
 			Session.add(testJob)
 			Session.commit()
 			
-			#submit a fake path for job manager path - we are not testing the job manager here
-			self.failUnless(testJob.submit(self.fake.file_path(depth=3),Session))
+			self.failUnless(testJob.submit(Session))
 			self.failUnless(testJob.status == "Submitted")
 			self.failUnless(testJob.pbsID is not None)
 

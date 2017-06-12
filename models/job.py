@@ -7,7 +7,7 @@ from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
 from src.base import Base
-from env.environment import virtualEnvPath
+from env.environment import virtualEnvPath, jobStatusManagerPath
 from src.stringUtilities import stripWhiteSpace,stripSlash
 
 class Job(Base):
@@ -22,7 +22,7 @@ class Job(Base):
     pbsID = Column('pbsID',Integer)
     files = relationship("File", back_populates="Job")
 
-    def submit(self,jobManagerPath,Session):
+    def submit(self,Session):
         ##Create script with appropriate information
         scriptName = self.jobName+".csh"
         with open(scriptName,'w') as script:
@@ -39,12 +39,12 @@ class Job(Base):
 
             script.write("#PBS -j oe \n")
             script.write("source "+virtualEnvPath+"\n")
-            script.write("python "+jobManagerPath+" updateJobStatus "+str(self.id)+" R\n")
+            script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(self.id)+" R\n")
             script.write("deactivate\n")
             script.write(self.executionCommand+"\n")
             script.write("source "+virtualEnvPath+"\n")
-            script.write("python "+jobManagerPath+" updateJobStatus "+str(self.id)+" C\n")
-            script.write("python "+jobManagerPath+" checkJobStatus "+str(self.id)+"\n")
+            script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(self.id)+" C\n")
+            script.write("python "+jobStatusManagerPath+" checkJobStatus "+str(self.id)+"\n")
             script.write("deactivate\n")
         cmd = "qsub "+scriptName
         pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
