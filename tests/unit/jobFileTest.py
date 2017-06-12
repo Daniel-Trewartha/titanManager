@@ -1,5 +1,5 @@
 import os, sys
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'../..')))
 import unittest
 from faker import Faker
 import env.testEnvironment as testEnvironment

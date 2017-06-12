@@ -1,5 +1,5 @@
 import datetime, os, sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
 from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, exc, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, mapper

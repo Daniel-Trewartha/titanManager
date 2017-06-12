@@ -1,5 +1,5 @@
 import os,sys,time,subprocess,unittest,re
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'../..')))
 import env.testEnvironment as testEnvironment
 import src.jobOps
 from faker import Faker

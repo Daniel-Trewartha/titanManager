@@ -1,5 +1,5 @@
 import os,sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
 from contextlib import contextmanager
 from sqlalchemy import create_engine,event
 from sqlalchemy.ext.declarative import declarative_base

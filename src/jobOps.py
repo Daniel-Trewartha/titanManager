@@ -1,7 +1,7 @@
 #Separate out the executable functionality
 
 import os, time, sys, datetime
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
 from datetime import timedelta
 from models.job import Job
 from models.jobFile import File
