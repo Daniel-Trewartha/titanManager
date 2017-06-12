@@ -3,7 +3,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__
 import env.testEnvironment as testEnvironment
 import src.jobOps
 from faker import Faker
-from env.environment import virtualEnvPath
+from env.environment import virtualEnvPath, jobStatusManagerPath
 from models.jobFile import File
 from models.job import Job
 from src.base import Base,session_scope,engine
@@ -32,7 +32,7 @@ class jobTest(unittest.TestCase):
 			Session.commit()
 			Session.refresh(testJob)
 			cmd = "source "+virtualEnvPath+"\n"
-			cmd += "python "+os.path.abspath(src.jobOps.__file__)+" updateJobStatus "+str(testJob.id)+" Teststatus\n"
+			cmd += "python "+jobStatusManagerPath+" updateJobStatus "+str(testJob.id)+" Teststatus\n"
 			cmd += "deactivate\n"
 			cmd += "exit"
 		updateTest = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
@@ -49,7 +49,7 @@ class jobTest(unittest.TestCase):
 			Session.commit()
 			Session.refresh(testJob)
 			cmd = "source "+virtualEnvPath+"\n"
-			cmd += "python "+os.path.abspath(src.jobOps.__file__)+" checkJobStatus "+str(testJob.id)+"\n"
+			cmd += "python "+jobStatusManagerPath+" checkJobStatus "+str(testJob.id)+"\n"
 			cmd += "deactivate\n"
 			cmd += "exit"
 		updateTest = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
