@@ -37,7 +37,6 @@ def main():
     print testJob.pbsID,testJob.status
 
 if __name__ == '__main__':
-    prodEnvironment.setEnvironment()
     with session_scope(engine) as Session:
         Base.metadata.create_all(engine)
         main()

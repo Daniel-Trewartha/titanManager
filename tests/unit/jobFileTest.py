@@ -4,6 +4,9 @@ import unittest
 from faker import Faker
 import env.testEnvironment as testEnvironment
 from tests.testUtils import assertIntegrityError,dummyFile
+from models.jobFile import File
+from models.job import Job
+from src.base import Base,session_scope,engine
 
 class jobFileTest(unittest.TestCase):
 	def setUp(self):
@@ -74,8 +77,4 @@ class jobFileTest(unittest.TestCase):
 			self.failUnless(not testFile.exists(Session))
 
 if __name__ == '__main__':
-	testEnvironment.setEnvironment()
-	from models.jobFile import File
-	from models.job import Job
-	from src.base import Base,session_scope,engine
 	unittest.main()

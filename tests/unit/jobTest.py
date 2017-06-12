@@ -3,6 +3,9 @@ sys.path.insert(0, os.path.abspath('../..'))
 import env.testEnvironment as testEnvironment
 from faker import Faker
 from tests.testUtils import dummyFile
+from models.jobFile import File
+from models.job import Job
+from src.base import Base,session_scope,engine
 
 class jobTest(unittest.TestCase):
 	def setUp(self):
@@ -115,8 +118,4 @@ class jobTest(unittest.TestCase):
 			os.remove(testFile.filePath())
 
 if __name__ == '__main__':
-	testEnvironment.setEnvironment()
-	from models.jobFile import File
-	from models.job import Job
-	from src.base import Base,session_scope,engine
 	unittest.main()

@@ -2,6 +2,12 @@ import os,sys,time,subprocess,unittest
 sys.path.insert(0, os.path.abspath('../..'))
 import env.testEnvironment as testEnvironment
 from faker import Faker
+from env.environment import virtualEnvPath
+from models.jobFile import File
+from models.job import Job
+import src.jobOps as jobOps
+from src.base import Base,session_scope,engine
+from tests.testUtils import dummyFile
 
 class jobTest(unittest.TestCase):
 	def setUp(self):
@@ -89,11 +95,4 @@ class jobTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-	testEnvironment.setEnvironment()
-	from env.environment import virtualEnvPath
-	from models.jobFile import File
-	from models.job import Job
-	import src.jobOps as jobOps
-	from src.base import Base,session_scope,engine
-	from tests.testUtils import dummyFile
 	unittest.main()
