@@ -24,13 +24,12 @@ def checkInputFiles(Session):
 
 def submitJobs(isWallTimeRestricted, isNodeRestricted,Session):
     #Submit jobs, optionally only those that fit on current free resources
-    checkInputFiles(Session)
     submitList = []
     eligibleJobs = filterEligibleJobs(isWallTimeRestricted, isNodeRestricted, "Ready", Session)
     for j in eligibleJobs:
         print "Submitting"
         print j.id, j.jobName
-        submitList.append(j.id)
+        submitList.append(j)
         j.submit(Session)
     return submitList
 
@@ -42,11 +41,10 @@ def rerunFailedJobs(isWallTimeRestricted, isNodeRestricted,Session):
         print "Submitting"
         print j.id, j.jobName
         j.submit(Session)
-        submitList.append(j.id)
+        submitList.append(j)
     return submitList
 
 def bundleJobs(isWallTimeRestricted, isNodeRestricted, Session):
-    checkInputFiles(Session)
     eligibleJobs = filterEligibleJobs(isWallTimeRestricted, isNodeRestricted, "Ready", Session)
     smallestJob = eligibleJobs.order_by(Job.nodes).first()
     jobs = []
@@ -59,7 +57,7 @@ def bundleJobs(isWallTimeRestricted, isNodeRestricted, Session):
             if (j.wallTime > maxWT):
                 maxWT = j.wallTime
             jobs.append(j)
-            eC = eC + " -n "+str(j.nodes)+" "+j.executionCommand+" :"
+            eC = eC + " -n "+str(j.nodes)+" serial "+j.executionCommand+" :"
     eC = eC[:-1]
     print len(jobs),totalNodes,maxWT, eC
     scriptName = "bundleJob.csh"
@@ -94,6 +92,11 @@ def bundleJobs(isWallTimeRestricted, isNodeRestricted, Session):
                 j.status = "Submitted"
             Session.commit()
             return True
+
+def checkJobsStatus(Session):
+    for j in Session.query(Job).all():
+        j.checkStatus(Session)
+    return True
 
 #Filter jobs by isWallTimeRestricted,isNodeRestricted,Status
 def filterEligibleJobs(isWallTimeRestricted, isNodeRestricted, status,Session):
