@@ -1,4 +1,0 @@
-- SQLalchemy for ORM?
--minimal functional version: has a database of jobs, submits them, tracks the results
--different executables?
-

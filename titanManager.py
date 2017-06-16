@@ -20,7 +20,8 @@ def main():
     outputFiles = ["output.txt","otheroutput.txt"]
     #wallTime = "00:00:10"
     #wT = parseTimeString(wallTime)
-    eC = "csh test.csh"
+    #eC = "--w-cd "+outputDir+" bash "+os.path.join(outputDir,"test.csh")
+    eC = "pwd"
     #testJob = Job(jobName="TestJob",executionCommand=eC,wallTime=wT)
     #Session.add(testJob)
     #Session.commit()

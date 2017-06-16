@@ -59,7 +59,7 @@ def bundleJobs(isWallTimeRestricted, isNodeRestricted, Session):
             if (j.wallTime > maxWT):
                 maxWT = j.wallTime
             jobs.append(j)
-            eC = eC + " -n "+str(j.nodes)+" "+j.executionCommand+" :"
+            eC = eC + " -n "+str(j.nodes)+" serial "+j.executionCommand+" :"
     eC = eC[:-1]
     print len(jobs),totalNodes,maxWT, eC
     scriptName = "bundleJob.csh"
@@ -70,13 +70,13 @@ def bundleJobs(isWallTimeRestricted, isNodeRestricted, Session):
             script.write("#PBS -l walltime="+str(maxWT)+"\n")
             script.write("#PBS -l nodes="+str(totalNodes)+"\n")
             script.write("#PBS -j oe \n")
-            script.write("Module load wraprun \n")
+            script.write("module load python/2.7.9 \n")
             script.write("source "+virtualEnvPath+"\n")
             for j in jobs:
                 script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" R\n")
-            script.write("deactivate\n")
+            script.write("module load wraprun \n")
+            script.write("wraprun -n 1 serial pwd \n")
             script.write(eC+"\n")
-            script.write("source "+virtualEnvPath+"\n")
             for j in jobs:
                 script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" C\n")
                 script.write("python "+jobStatusManagerPath+" checkJobStatus "+str(j.id)+"\n")
