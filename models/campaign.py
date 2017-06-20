@@ -5,6 +5,7 @@ from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
 from src.base import Base
+from job import Job
 from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes
 from src.stringUtilities import stripWhiteSpace,stripSlash
 
@@ -24,8 +25,23 @@ class Campaign(Base):
 	checkWallTime = Column('checkWallTime',Interval)
 
     #Public Methods
+    def statusReport(self,Session):
+        #Produce a report on the status of jobs in this campaign
+        reportString = ""
+        reportString += "Campaign "+self.campaignName+", id "+self.id+" \n"
+        reportString += self.jobs.count()+" total jobs \n"
+        reportString += self.__statusCount("Accepted")+" jobs accepted \n"
+        reportString += self.__statusCount("Missing Input")+" jobs missing input \n"
+        reportString += self.__statusCount("Ready")+" jobs ready for submission \n"
+        reportString += self.__statusCount("Submitted")+" jobs submitted \n"
+        reportString += self.__statusCount("R")+" jobs running \n"
+        reportString += self.__statusCount("C")+" jobs complete \n"
+        reportString += self.__statusCount("Checking")+" jobs being checked \n"
+        reportString += self.__statusCount("Checked")+" jobs checked \n"
+        reportString += self.__statusCount("Successful")+" jobs successful \n"
+        reportString += self.__statusCount("Failed")+" jobs failed \n"
 
-    def submitJobs(Self,Session,maxNodes=totalNodes,maxJobs=self.jobs.count()):
+    def submitJobs(self,Session,maxNodes=totalNodes,maxJobs=self.jobs.count()):
         #submit a bundle of up to maxJobs jobs that occupy fewer than maxNodes nodes
         #return number of nodes submitted
 
@@ -59,7 +75,7 @@ class Campaign(Base):
         else:
             return 0
 
-    def submitCheckJobs(Self,Session,maxNodes=totalNodes,maxJobs=self.jobs.count()):
+    def submitCheckJobs(self,Session,maxNodes=totalNodes,maxJobs=self.jobs.count()):
         #submit a bundle of up to maxJobs job checks that occupy fewer than maxNodes nodes
         #return number of nodes submitted
         #list of jobs to submit
@@ -92,13 +108,15 @@ class Campaign(Base):
             return 0
 
     def checkCompletionStatus(self,Session,jobList=self.jobs):
+        successList = []
         for j in jobList:
             if (j.status == 'Checked' or (j.status == 'C' and self.outputCheckScript is None)):
                 if(j.checkCompletionStatus(Session)):
                     j.status == 'Successful'
+                    successList.append(j)
                 else:
                     j.status == 'Failed'
-        return True
+        return successList
 
     ## Private Methods
 
@@ -190,3 +208,7 @@ class Campaign(Base):
                 else:
                     j.status = "Missing Input"
         Session.commit()
+
+    def __statusCount(self,Session,status):
+        #Return the number of jobs with status status in this campaign
+        return str(Session.query(Job).filter(Job.campaignID == self.id).filter(Job.status == status).count())

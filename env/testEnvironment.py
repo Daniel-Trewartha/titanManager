@@ -8,7 +8,7 @@ totalNodes = "18649"
 envName = 'environment.py'
 backfillMode = False
 maxJobs = 10
-maxWallTime = datetime.timedelta(hours=24)
+maxWallTime = datetime.timedelta(hours=1)
 
 with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("localDBFile=\"" + localDBFile+"\"\n")
