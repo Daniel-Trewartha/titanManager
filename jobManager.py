@@ -17,12 +17,12 @@ from src.stringUtilities import parseTimeString
 def main():
 
 	print "Campaign Status Report"
-	for c in Campaign:
+	for c in Session.query(Campaign).all():
 		print c.statusReport(Session)
 	print "Submitting jobs"
 	sN,sJ = submitJobs(Session,backfillMode,backfillMode)
 	print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
-	for c in Campaign:
+	for c in Session.query(Campaign).all():
 		sList = c.checkCompletionStatus(Session)
 		print "Campaign "+c.campaignName+" reports "+str(len(sList))+"new successful completions"
 		for j in sList:

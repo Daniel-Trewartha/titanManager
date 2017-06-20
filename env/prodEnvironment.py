@@ -17,4 +17,4 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("jobStatusManagerPath =\"" + jobStatusManagerPath + "\"\n")
 	envFile.write("backfillMode =\"" + str(backfillMode) + "\"\n")
 	envFile.write("maxJobs =\"" + str(maxJobs) + "\"\n")
-	envFile.write("maxWallTime =\"" + maxWallTime + "\"\n")
+	envFile.write("maxWallTime =\"" + str(maxWallTime) + "\"\n")

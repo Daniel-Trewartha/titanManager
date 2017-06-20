@@ -19,9 +19,9 @@ class Job(Base):
     wallTime = Column('wallTime',Interval,default=datetime.timedelta(hours=1))
     status = Column('status',String)
     pbsID = Column('pbsID',Integer)
-    files = relationship("File", back_populates="Job")
+    files = relationship("File", back_populates="job")
     campaignID = Column('campaignID',Integer,ForeignKey("campaigns.id"))
-    campaign = relationship("Campaign", back_populates="Jobs")
+    campaign = relationship("Campaign", back_populates="jobs")
 
     #successful completion of a job marked in two ways
     #existence of output files(if any)
@@ -36,7 +36,7 @@ class Job(Base):
 
     def checkCompletionStatus(self,Session):
         #Check if job has run successfully
-        if (self.__checkOut(Session) and self.__checkOutputFiles(Session))
+        if (self.__checkOut(Session) and self.__checkOutputFiles(Session)):
             return True
         else:
             return False

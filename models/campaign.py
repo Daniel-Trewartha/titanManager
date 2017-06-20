@@ -12,17 +12,17 @@ from src.stringUtilities import stripWhiteSpace,stripSlash
 #A collection of jobs that are compatible to be wrapran.
 #It is the responsibility of the user to ensure that jobs have compatible walltimes, node requirements, modules etc.
 class Campaign(Base):
-	__tablename__ = 'campaigns'
+    __tablename__ = 'campaigns'
 
-	id = Column(Integer, primary_key=True)
-	campaignName = Column('campaignName',String)
-	jobs = relationship("Job", back_populates="Campaign")
-	header = Column('header',String)
-	footer = Column('footer',String)
-	checkHeader = Column('checkHeader',String)
-	checkFooter = Column('checkFooter',String)
-	wallTime = Column('walltime',Interval)
-	checkWallTime = Column('checkWallTime',Interval)
+    id = Column(Integer, primary_key=True)
+    campaignName = Column('campaignName',String)
+    jobs = relationship("Job", back_populates="campaign")
+    header = Column('header',String)
+    footer = Column('footer',String)
+    checkHeader = Column('checkHeader',String)
+    checkFooter = Column('checkFooter',String)
+    wallTime = Column('walltime',Interval)
+    checkWallTime = Column('checkWallTime',Interval)
 
     #Public Methods
     def statusReport(self,Session):
@@ -41,9 +41,11 @@ class Campaign(Base):
         reportString += self.__statusCount("Successful")+" jobs successful \n"
         reportString += self.__statusCount("Failed")+" jobs failed \n"
 
-    def submitJobs(self,Session,maxNodes=totalNodes,maxJobs=self.jobs.count()):
+    def submitJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
         #submit a bundle of up to maxJobs jobs that occupy fewer than maxNodes nodes
         #return number of nodes submitted
+        if(maxJobs == -1):
+            maxJobs = self.jobs.count()
 
         self.__checkInput(Session)
         #list of jobs to submit
@@ -75,9 +77,12 @@ class Campaign(Base):
         else:
             return 0
 
-    def submitCheckJobs(self,Session,maxNodes=totalNodes,maxJobs=self.jobs.count()):
+    def submitCheckJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
         #submit a bundle of up to maxJobs job checks that occupy fewer than maxNodes nodes
         #return number of nodes submitted
+        if (maxJobs == -1):
+            maxJobs = self.jobs.count()
+
         #list of jobs to submit
         jobList = []
         jobCount = 0
@@ -107,7 +112,9 @@ class Campaign(Base):
         else:
             return 0
 
-    def checkCompletionStatus(self,Session,jobList=self.jobs):
+    def checkCompletionStatus(self,Session,jobList=[]):
+        if (jobList == []):
+            jobList = self.jobs
         successList = []
         for j in jobList:
             if (j.status == 'Checked' or (j.status == 'C' and self.outputCheckScript is None)):
@@ -120,15 +127,15 @@ class Campaign(Base):
 
     ## Private Methods
 
-	def __createSubmissionScript(self, Session, jobList):
+    def __createSubmissionScript(self, Session, jobList):
         #construct a job submission script from a list of jobs
         scriptName = self.campaignName+".csh"
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
-        	nodes += j.nodes
-        	wraprun += '-n '+j.nodes
-        	wraprun += ' '+j.executionCommand+' : '
+            nodes += j.nodes
+            wraprun += '-n '+j.nodes
+            wraprun += ' '+j.executionCommand+' : '
         wraprun = wraprun[:-2]
         print wraprun
         with open(scriptName,'w') as script:
@@ -139,34 +146,34 @@ class Campaign(Base):
             else: 
                 script.write("#PBS -l walltime=01:00:00\n")
             script.write("#PBS -l nodes="+str(nodes)+"\n")
-			script.write("#PBS -j oe \n")
+            script.write("#PBS -j oe \n")
 
-			script.write(self.header+"\n")
+            script.write(self.header+"\n")
 
             script.write("source "+virtualEnvPath+"\n")
             for j in jobList:
-	            script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" R\n")
+                script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" R\n")
             script.write("deactivate\n")
             script.write(wraprun+"\n")
             script.write(self.footer+"\n")
             script.write("source "+virtualEnvPath+"\n")
             for j in jobList:
-	            script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" C\n")
+                script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" C\n")
             script.write("deactivate\n")
         return scriptName
 
-	def __createCheckSubmissionScript(self, Session, jobList):
+    def __createCheckSubmissionScript(self, Session, jobList):
         #construct a job check submission script from a list of jobs
         scriptName = self.campaignName+"Check.csh"
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
-        	if (j.outputCheckScript):
-	        	nodes += j.nodes
-    	    	wraprun += '-n '+j.nodes
-        		wraprun += ' '+j.outputCheckScript+' : '
-        	else:
-        		print "Warning: job " + j.jobName+", "+j.id+" has no check script"
+            if (j.outputCheckScript):
+                nodes += j.nodes
+                wraprun += '-n '+j.nodes
+                wraprun += ' '+j.outputCheckScript+' : '
+            else:
+                print "Warning: job " + j.jobName+", "+j.id+" has no check script"
         wraprun = wraprun[:-2]
         print wraprun
         with open(scriptName,'w') as script:
@@ -177,11 +184,11 @@ class Campaign(Base):
             else: 
                 script.write("#PBS -l walltime=01:00:00\n")
             script.write("#PBS -l nodes="+str(nodes)+"\n")
-			script.write("#PBS -j oe \n")
+            script.write("#PBS -j oe \n")
 
-			script.write(self.checkHeader+"\n")
+            script.write(self.checkHeader+"\n")
             script.write(wraprun+"\n")
-			script.write(self.checkFooter+"\n")
+            script.write(self.checkFooter+"\n")
             script.write("source "+virtualEnvPath+"\n")
             for j in jobList:
                 script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" Checked\n")
@@ -194,13 +201,15 @@ class Campaign(Base):
         except ValueError:
             return False
         else:
-        	for j in jobList:
-	            j.checkPbsID = pbsID
-            	j.status = "Submitted"
+            for j in jobList:
+                j.checkPbsID = pbsID
+                j.status = "Submitted"
             Session.commit()
             return True
 
-    def __checkInput(self,Session,jobList=self.jobs):
+    def __checkInput(self,Session,jobList=[]):
+        if(jobList == []):
+            jobList = self.jobs
         for j in jobList:
             if (j.status == "Accepted" or j.status == "Failed"):
                 if (j.checkInput(Session)):

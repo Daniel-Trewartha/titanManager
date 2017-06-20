@@ -17,7 +17,7 @@ def submitJobs(Session,isWallTimeRestricted, isNodeRestricted):
         nodes = totalNodes
     if (not isWallTimeRestricted):
         wallTime = maxWallTime
-    availableJobs = maxJobs - pbsUtilities.getQueuedJobs()
+    availableJobs = int(maxJobs) - pbsUtilities.getQueuedJobs()
     submittedNodes = nodes
     submittedJobs = availableJobs
     #Submit checks before new jobs
