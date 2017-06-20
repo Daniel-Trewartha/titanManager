@@ -2,7 +2,6 @@
 import datetime, os, sys, subprocess
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
 from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
@@ -21,85 +20,54 @@ class Job(Base):
     status = Column('status',String)
     pbsID = Column('pbsID',Integer)
     files = relationship("File", back_populates="Job")
+    campaignID = Column('campaignID',Integer,ForeignKey("campaigns.id"))
+    campaign = relationship("Campaign", back_populates="Jobs")
 
-    def submit(self,Session):
-        ##Create script with appropriate information
-        scriptName = self.jobName+".csh"
-        with open(scriptName,'w') as script:
-            script.write("#PBS -A NPH103\n")
-            script.write("#PBS -N "+self.jobName+"\n")
-            if(self.wallTime):
-                script.write("#PBS -l walltime="+str(self.wallTime)+"\n")
-            else: 
-                script.write("#PBS -l walltime=01:00:00\n")
-            if(self.nodes):
-                script.write("#PBS -l nodes="+str(self.nodes)+"\n")
-            else:
-                script.write("#PBS -l nodes=1\n")
+    #successful completion of a job marked in two ways
+    #existence of output files(if any)
+    #running of an output check code
+    #output check code should produce a single file in checkOutLoc, the contents of which are either 'True' or 'False'
+    outputCheckScript = Column('outputCheckScript',String)
+    checkNodes = Column('checkNodes',Integer,default=1)
+    checkPbsID = Column('checkPbsID',Integer)
+    checkOutLoc = Column('checkOutLoc',String)
 
-            script.write("#PBS -j oe \n")
-            script.write("source "+virtualEnvPath+"\n")
-            script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(self.id)+" R\n")
-            script.write("deactivate\n")
-            script.write(self.executionCommand+"\n")
-            script.write("source "+virtualEnvPath+"\n")
-            script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(self.id)+" C\n")
-            script.write("deactivate\n")
-        cmd = "qsub "+scriptName
-        pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-        pbsID = pbsSubmit.stdout.read().strip()
-        try:
-            int(pbsID)
-        except ValueError:
-            return False
-        else:
-            self.pbsID = pbsID
-            self.status = "Submitted"
-            Session.commit()
+    #Public methods
+
+    def checkCompletionStatus(self,Session):
+        #Check if job has run successfully
+        if (self.__checkOut(Session) and self.__checkOutputFiles(Session))
             return True
-
-    def checkStatus(self,Session):
-        status = self.status
-        #If submitted but not yet run, do a qstat
-        #Should avoid triggering this if at all possible
-        if (status == 'Submitted' and self.pbsID is not None):
-            cmd = "qstat -f "+str(self.pbsID)+" | grep 'job_state'"
-            pbsCMD = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-            pbsStatus = pbsCMD.stdout.read()
-            if (not str.split(pbsStatus) == []):
-                pbsStatus = str.split(pbsStatus)[2]
-                status = str.split(pbsStatus)[2]
-                self.status = status
-            else:
-                #if you have a pbs id but qstat is null, you've run
-                if (os.path.exists(self.jobName+".o"+str(self.pbsID))):
-                    status = "C"
-                #you have a pbs id but no output - bad
-                else:
-                    status = "Failed"
-        #If your pbs status is C, check to see if the output files exist
-        if(status == "C"):
-            if(self.checkOutput(Session)):
-                status = "Successful"
-            else:
-                status = "Failed"
-        #commit changes
-        self.status = status
-        Session.commit()
-        return status
-
-    def checkOutput(self,Session):
-        #check for output file existence
-        for oF in [oF for oF in self.files if oF.ioType == 'output']:
-            if (not oF.exists(Session)):
-                return False
-        return True
+        else:
+            return False
 
     def checkInput(self,Session):
         #check for input file existence
-        #Apparently in memory is the only way to do this
         for iF in [iF for iF in self.files if iF.ioType == 'input']:
             if (not iF.exists(Session)):
+                return False
+        return True
+
+    #Private methods
+
+    def __checkOut(self,Session):
+        #check the output file in checkOutLoc
+        #if no output file specified, return true
+        if (self.checkOutLoc is not None):
+            if (os.path.exists(self.checkOutLoc)):
+                with open(checkOutLoc,'r') as f:
+                    return f.read()
+            else:
+                return False
+
+        else:
+            return True
+
+    def __checkOutputFiles(self,Session):
+        #check for output file existence
+        #returns true if job has no output files
+        for oF in [oF for oF in self.files if oF.ioType == 'output']:
+            if (not oF.exists(Session)):
                 return False
         return True
 
@@ -107,6 +75,8 @@ class Job(Base):
     def _stripJobName(mapper, connection, target):
         if (target.jobName is not None):
             target.jobName = stripSlash(stripWhiteSpace(target.jobName))
+        if (target.checkOutLoc is not None):
+            target.checkOutLoc = stripWhiteSpace(target.checkOutLoc)
 #EVENT LISTENERS
 
 #Defaults

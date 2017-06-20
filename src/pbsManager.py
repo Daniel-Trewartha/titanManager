@@ -3,9 +3,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__
 import src.stringUtilities as stringUtilities
 from env.environment import totalNodes
 
-def main():
-	print "Commands for pbs"
-
 def getFreeResources():
 	cmd = "qstat -a | grep ' R '"
 	qstatOut = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True).stdout.read()
@@ -20,3 +17,8 @@ def getFreeResources():
 			if (wallTime < minWallTime and wallTime.total_seconds() > 0):
 				minWallTime = wallTime
 	return freeNodes, minWallTime
+
+def getQueuedJobs():
+	#TO DO: write this. It should return the number of jobs in the queue for the current user.
+	#Don't include complete or failed jobs
+	return 0

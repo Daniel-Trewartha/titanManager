@@ -38,7 +38,7 @@ def main():
 	print("Execution Command: " + jobObj.executionCommand)
 	iFs = []
 	print("Input Files: ")
-	for iF in job.findall('inputFile'):
+	for iF in job.find('inputFiles').findall('elem'):
 		name = iF.find('filename').text
 		directory = iF.find('directory').text
 		iFs.append(File(fileName=name,fileDir=directory,ioType='input',jobID=jobObj.id))
@@ -46,7 +46,7 @@ def main():
 		print(os.path.join(iFs[-1].fileDir,iFs[-1].fileDir))
 	oFs = []
 	print("Output Files: ")
-	for oF in job.findall('outputFile'):
+	for oF in job.find('outputFiles').findall('elem'):
 		name = oF.find('filename').text
 		directory = oF.find('directory').text
 		oFs.append(File(fileName=name,fileDir=directory,ioType='output',jobID=jobObj.id))
