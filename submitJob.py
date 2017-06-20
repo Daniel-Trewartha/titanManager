@@ -5,8 +5,8 @@ import os, time, sys
 import xml.etree.ElementTree as ET
 from models.job import Job
 from models.jobFile import File
+from models.campaign import Campaign
 from src.base import Base, session_scope, engine
-from src.jobOps import submitJobs, rerunFailedJobs, bundleJobs, checkJobsStatus, checkInputFiles
 from src.stringUtilities import parseTimeString
 
 def main():
@@ -14,9 +14,11 @@ def main():
 	#A job has: a name
 	#a number of nodes
 	#a walltime
-	#an execution command
+	#an execution string
+	#a campaign ID
 	#a list of required input files
 	#a list of expected output files
+	#a check string
 
 	#A file has:
 	#a name
@@ -28,7 +30,14 @@ def main():
 	nodes = int(job.find('nodes').text)
 	wallTime = parseTimeString(job.find('wallTime').text)
 	eC = job.find('executionCommand').text
-	jobObj = Job(jobName=jobName,nodes=nodes,wallTime=wallTime,executionCommand=eC)
+	cC = job.find('outputCheckCommand').text
+	cOutLoc = job.find('outputCheckLoc').text
+	campaign = job.find('campaign').text
+	try:
+		cID = int(campaign)
+	except ValueError:
+		cID = Session.query(Campaign).filter(Campaign.campaignName.like(campaign)).one().id
+	jobObj = Job(jobName=jobName,nodes=nodes,wallTime=wallTime,executionCommand=eC,checkOutputScript=cC,checkOutputLoc=cOutLoc,campaignID=cID)
 	Session.add(jobObj)
 	Session.commit()
 	print("Job details: ")
@@ -43,7 +52,7 @@ def main():
 		directory = iF.find('directory').text
 		iFs.append(File(fileName=name,fileDir=directory,ioType='input',jobID=jobObj.id))
 		Session.add(iFs[-1])
-		print(os.path.join(iFs[-1].fileDir,iFs[-1].fileDir))
+		print(os.path.join(iFs[-1].fileDir,iFs[-1].fileName))
 	oFs = []
 	print("Output Files: ")
 	for oF in job.find('outputFiles').findall('elem'):
@@ -51,7 +60,7 @@ def main():
 		directory = oF.find('directory').text
 		oFs.append(File(fileName=name,fileDir=directory,ioType='output',jobID=jobObj.id))
 		Session.add(oFs[-1])
-		print(os.path.join(oFs[-1].fileDir,oFs[-1].fileDir))
+		print(os.path.join(oFs[-1].fileDir,oFs[-1].fileName))
 	jobObj.files = iFs+oFs
 	Session.commit()
 	for iF in iFs:

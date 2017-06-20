@@ -1,6 +1,6 @@
 import datetime, os, sys, subprocess
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
-from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, ForeignKey
+from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
@@ -15,7 +15,7 @@ class Campaign(Base):
     __tablename__ = 'campaigns'
 
     id = Column(Integer, primary_key=True)
-    campaignName = Column('campaignName',String)
+    campaignName = Column('campaignName',String,unique=True)
     jobs = relationship("Job", back_populates="campaign")
     header = Column('header',String)
     footer = Column('footer',String)
@@ -168,10 +168,10 @@ class Campaign(Base):
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
-            if (j.outputCheckScript):
+            if (j.checkOutputScript):
                 nodes += j.nodes
                 wraprun += '-n '+j.nodes
-                wraprun += ' '+j.outputCheckScript+' : '
+                wraprun += ' '+j.checkOutputScript+' : '
             else:
                 print "Warning: job " + j.jobName+", "+j.id+" has no check script"
         wraprun = wraprun[:-2]

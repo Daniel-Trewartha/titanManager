@@ -14,7 +14,7 @@ class Job(Base):
         
     id = Column(Integer, primary_key=True)
     jobName = Column('jobName',String,default='default')
-    executionCommand = Column('executionCommand',String,default="echo 'No Execution Command'")
+    executionCommand = Column('executionCommand',String,default="serial echo 'No Execution Command'")
     nodes = Column('nodes',Integer,default=1)
     wallTime = Column('wallTime',Interval,default=datetime.timedelta(hours=1))
     status = Column('status',String)
@@ -27,10 +27,10 @@ class Job(Base):
     #existence of output files(if any)
     #running of an output check code
     #output check code should produce a single file in checkOutLoc, the contents of which are either 'True' or 'False'
-    outputCheckScript = Column('outputCheckScript',String)
+    checkOutputScript = Column('checkOutputScript',String)
     checkNodes = Column('checkNodes',Integer,default=1)
     checkPbsID = Column('checkPbsID',Integer)
-    checkOutLoc = Column('checkOutLoc',String)
+    checkOutputLoc = Column('checkOutLoc',String)
 
     #Public methods
 
@@ -53,9 +53,9 @@ class Job(Base):
     def __checkOut(self,Session):
         #check the output file in checkOutLoc
         #if no output file specified, return true
-        if (self.checkOutLoc is not None):
-            if (os.path.exists(self.checkOutLoc)):
-                with open(checkOutLoc,'r') as f:
+        if (self.checkOutputLoc is not None):
+            if (os.path.exists(self.checkOutputLoc)):
+                with open(checkOutputLoc,'r') as f:
                     return f.read()
             else:
                 return False
@@ -75,8 +75,8 @@ class Job(Base):
     def _stripJobName(mapper, connection, target):
         if (target.jobName is not None):
             target.jobName = stripSlash(stripWhiteSpace(target.jobName))
-        if (target.checkOutLoc is not None):
-            target.checkOutLoc = stripWhiteSpace(target.checkOutLoc)
+        if (target.checkOutputLoc is not None):
+            target.checkOutputLoc = stripWhiteSpace(target.checkOutputLoc)
 #EVENT LISTENERS
 
 #Defaults

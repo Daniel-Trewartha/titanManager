@@ -1,21 +1,7 @@
 TO ADD:
 
-outputfiles: change to output execution string
-make an output checker submission script in the same way as job submission script
+unit tests need to be rewritten
+integration tests need to be written
+getQueuedJobs needs to be written
 
-campaign class: name, header, footer, checker header, checker footer
-jobs have a campaign
-only wraprun from same campaign
-
-docs:
-usage, samples
-
-
-
-
-Campaign:
-Should handle everything about its jobs
-check for input files
-submit X jobs to fill max N nodes
-submit appropriately
-resubmit if necessary
+write docs, provide samples

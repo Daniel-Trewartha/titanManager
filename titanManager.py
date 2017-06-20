@@ -6,6 +6,8 @@ from src.base import Base, session_scope, engine
 from src.jobOps import submitJobs, bundleJobs
 from src.stringUtilities import parseTimeString
 
+#Has your time come?
+#Is your faithful service at an end?
 def main():
     #xml input
     #Take job as argument??
