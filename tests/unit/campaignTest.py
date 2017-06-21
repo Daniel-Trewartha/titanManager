@@ -56,16 +56,16 @@ class campaignTest(unittest.TestCase):
 			self.failUnless(testJob1.status == "Submitted")
 			self.failUnless(testJob3.status == "Submitted")
 			self.failUnless(testJob1.pbsID is not None)
-			self.failUnless(testJob3.pbsId is not None)
+			self.failUnless(testJob3.pbsID is not None)
 			self.failUnless(testJob1.pbsID == testJob3.pbsID)
-			self.failUnless(delJob(testJob1))
-			self.failUnless(delJob(testJob3))
+			self.failUnless(self.delJob(testJob1))
+			self.failUnless(self.delJob(testJob3))
 
 			#submit max jobs 1 - should submit testJob 2
 			self.failUnless(testCampaign.submitJobs(Session,maxJobs=1) == 2)
 			self.failUnless(testJob2.status == "Submitted")
 			self.failUnless(testJob2.pbsID is not None)
-			self.failUnless(delJob(testJob2))
+			self.failUnless(self.delJob(testJob2))
 
 			#testJob 4 should never have been submitted, but should be ready
 			self.failUnless(testJob4.status == "Ready")
@@ -100,7 +100,7 @@ class campaignTest(unittest.TestCase):
 			self.failUnless(testJob1.checkPbsID is not None)
 			self.failUnless(testJob2.checkPbsID is None)
 			self.failUnless(testJob3.checkPbsID is None)
-			self.failUnless(delJob(testJob1))
+			self.failUnless(self.delCheckJob(testJob1))
 
 			for f in os.listdir(os.path.split(os.path.abspath(__file__))[0]):
 				if re.search(testCampaign.campaignName+"\.*",f):

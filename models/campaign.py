@@ -89,7 +89,7 @@ class Campaign(Base):
         jobCount = 0
         nodeCount = 0
         for j in self.jobs:
-            if (j.status == "C" and j.checkNodes+nodeCount <= maxNodes):
+            if (j.status == "C" and j.checkNodes+nodeCount <= maxNodes and j.checkOutputScript):
                 jobList.append(j)
                 nodeCount += j.checkNodes
                 jobCount += 1
