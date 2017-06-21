@@ -1,4 +1,4 @@
-import os,sys
+import os,sys,datetime
 
 localDBFile = os.path.split(os.path.abspath(__file__))[0]+"/manager.db"
 virtualEnvPath = os.path.join('/ccs/home/danieltr/titanManager',"titanManager","bin","activate")
@@ -9,6 +9,7 @@ envName = 'environment.py'
 backfillMode = False
 maxJobs = 10
 maxWallTime = datetime.timedelta(hours=1)
+userName = 'danieltr'
 
 with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("localDBFile=\"" + localDBFile+"\"\n")
@@ -18,3 +19,4 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("backfillMode =\"" + str(backfillMode) + "\"\n")
 	envFile.write("maxJobs =\"" + str(maxJobs) + "\"\n")
 	envFile.write("maxWallTime =\"" + str(maxWallTime) + "\"\n")
+	envFile.write("userName =\""+userName+"\"\n")

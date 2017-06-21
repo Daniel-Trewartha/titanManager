@@ -55,7 +55,7 @@ class Job(Base):
         #if no output file specified, return true
         if (self.checkOutputLoc is not None):
             if (os.path.exists(self.checkOutputLoc)):
-                with open(checkOutputLoc,'r') as f:
+                with open(self.checkOutputLoc,'r') as f:
                     return f.read()
             else:
                 return False

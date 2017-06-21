@@ -1,7 +1,7 @@
 import os, sys, subprocess, datetime
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
 import src.stringUtilities as stringUtilities
-from env.environment import totalNodes
+from env.environment import totalNodes,userName
 
 def getFreeResources():
 	cmd = "qstat -a | grep ' R '"
@@ -19,6 +19,12 @@ def getFreeResources():
 	return freeNodes, minWallTime
 
 def getQueuedJobs():
-	#TO DO: write this. It should return the number of jobs in the queue for the current user.
-	#Don't include complete or failed jobs
-	return 0
+	cmd = "qstat -u "+userName
+	qstatOut = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True).stdout.read()
+	queuedStats = ['Q','H','R','S']
+	queuedJobs = 0
+	for line in str.split(qstatOut,'\n'):
+		if (len(str.split(line)) == 5):
+			if str.split(line)[4] in queuedStats:
+				queuedJobs += 1
+	return queuedJobs

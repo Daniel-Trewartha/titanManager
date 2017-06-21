@@ -4,6 +4,7 @@ import unittest
 from faker import Faker
 import env.testEnvironment as testEnvironment
 from tests.testUtils import assertIntegrityError,dummyFile
+from models.campaign import Campaign
 from models.jobFile import File
 from models.job import Job
 from src.base import Base,session_scope,engine

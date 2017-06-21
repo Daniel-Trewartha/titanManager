@@ -28,24 +28,25 @@ class Campaign(Base):
     def statusReport(self,Session):
         #Produce a report on the status of jobs in this campaign
         reportString = ""
-        reportString += "Campaign "+self.campaignName+", id "+self.id+" \n"
-        reportString += self.jobs.count()+" total jobs \n"
-        reportString += self.__statusCount("Accepted")+" jobs accepted \n"
-        reportString += self.__statusCount("Missing Input")+" jobs missing input \n"
-        reportString += self.__statusCount("Ready")+" jobs ready for submission \n"
-        reportString += self.__statusCount("Submitted")+" jobs submitted \n"
-        reportString += self.__statusCount("R")+" jobs running \n"
-        reportString += self.__statusCount("C")+" jobs complete \n"
-        reportString += self.__statusCount("Checking")+" jobs being checked \n"
-        reportString += self.__statusCount("Checked")+" jobs checked \n"
-        reportString += self.__statusCount("Successful")+" jobs successful \n"
-        reportString += self.__statusCount("Failed")+" jobs failed \n"
+        reportString += "Campaign "+self.campaignName+", id "+str(self.id)+" \n"
+        reportString += str(len(self.jobs))+" total jobs \n"
+        reportString += self.__statusCount(Session,"Accepted")+" jobs accepted \n"
+        reportString += self.__statusCount(Session,"Missing Input")+" jobs missing input \n"
+        reportString += self.__statusCount(Session,"Ready")+" jobs ready for submission \n"
+        reportString += self.__statusCount(Session,"Submitted")+" jobs submitted \n"
+        reportString += self.__statusCount(Session,"R")+" jobs running \n"
+        reportString += self.__statusCount(Session,"C")+" jobs complete \n"
+        reportString += self.__statusCount(Session,"Checking")+" jobs being checked \n"
+        reportString += self.__statusCount(Session,"Checked")+" jobs checked \n"
+        reportString += self.__statusCount(Session,"Successful")+" jobs successful \n"
+        reportString += self.__statusCount(Session,"Failed")+" jobs failed \n"
+        return reportString
 
     def submitJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
         #submit a bundle of up to maxJobs jobs that occupy fewer than maxNodes nodes
         #return number of nodes submitted
         if(maxJobs == -1):
-            maxJobs = self.jobs.count()
+            maxJobs = len(self.jobs)
 
         self.__checkInput(Session)
         #list of jobs to submit
@@ -60,7 +61,7 @@ class Campaign(Base):
             if (jobCount == maxJobs):
                 break
         if (len(jobList) > 0):
-            scriptName = self.__createSubmissionScript(jobList)
+            scriptName = self.__createSubmissionScript(Session,jobList)
             cmd = "qsub "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsID = pbsSubmit.stdout.read().strip()
@@ -81,7 +82,7 @@ class Campaign(Base):
         #submit a bundle of up to maxJobs job checks that occupy fewer than maxNodes nodes
         #return number of nodes submitted
         if (maxJobs == -1):
-            maxJobs = self.jobs.count()
+            maxJobs = len(self.jobs)
 
         #list of jobs to submit
         jobList = []
@@ -95,7 +96,7 @@ class Campaign(Base):
             if (jobCount == maxJobs):
                 break
         if (len(jobList) > 0):
-            scriptName = self.__createCheckSubmissionScript(jobList)
+            scriptName = self.__createCheckSubmissionScript(Session,jobList)
             cmd = "qsub "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsID = pbsSubmit.stdout.read().strip()
@@ -117,12 +118,13 @@ class Campaign(Base):
             jobList = self.jobs
         successList = []
         for j in jobList:
-            if (j.status == 'Checked' or (j.status == 'C' and self.outputCheckScript is None)):
+            if (j.status == 'Checked' or (j.status == 'C' and j.checkOutputScript is None)):
                 if(j.checkCompletionStatus(Session)):
-                    j.status == 'Successful'
+                    j.status = 'Successful'
                     successList.append(j)
                 else:
-                    j.status == 'Failed'
+                    j.status = 'Failed'
+        Session.commit()
         return successList
 
     ## Private Methods
@@ -134,7 +136,7 @@ class Campaign(Base):
         wraprun = 'wraprun '
         for j in jobList:
             nodes += j.nodes
-            wraprun += '-n '+j.nodes
+            wraprun += '-n '+str(j.nodes)
             wraprun += ' '+j.executionCommand+' : '
         wraprun = wraprun[:-2]
         print wraprun
@@ -155,7 +157,7 @@ class Campaign(Base):
                 script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" R\n")
             script.write("deactivate\n")
             script.write(wraprun+"\n")
-            script.write(self.footer+"\n")
+            script.write(str(self.footer)+"\n")
             script.write("source "+virtualEnvPath+"\n")
             for j in jobList:
                 script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" C\n")
@@ -170,10 +172,10 @@ class Campaign(Base):
         for j in jobList:
             if (j.checkOutputScript):
                 nodes += j.nodes
-                wraprun += '-n '+j.nodes
+                wraprun += '-n '+str(j.nodes)
                 wraprun += ' '+j.checkOutputScript+' : '
             else:
-                print "Warning: job " + j.jobName+", "+j.id+" has no check script"
+                print "Warning: job " + j.jobName+", "+str(j.id)+" has no check script"
         wraprun = wraprun[:-2]
         print wraprun
         with open(scriptName,'w') as script:
@@ -188,24 +190,12 @@ class Campaign(Base):
 
             script.write(self.checkHeader+"\n")
             script.write(wraprun+"\n")
-            script.write(self.checkFooter+"\n")
+            script.write(str(self.checkFooter)+"\n")
             script.write("source "+virtualEnvPath+"\n")
             for j in jobList:
                 script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" Checked\n")
             script.write("deactivate\n")
-        cmd = "qsub "+scriptName
-        pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-        pbsID = pbsSubmit.stdout.read().strip()
-        try:
-            int(pbsID)
-        except ValueError:
-            return False
-        else:
-            for j in jobList:
-                j.checkPbsID = pbsID
-                j.status = "Submitted"
-            Session.commit()
-            return True
+        return scriptName
 
     def __checkInput(self,Session,jobList=[]):
         if(jobList == []):

@@ -8,7 +8,8 @@ totalNodes = "18649"
 envName = 'environment.py'
 backfillMode = False
 maxJobs = 50
-maxWallTime = datetime.timedelta(hours=24)
+maxWallTime = datetime.timedelta(hours=23)
+userName = 'danieltr'
 	
 with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("localDBFile=\"" + localDBFile+"\"\n")
@@ -18,3 +19,4 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("backfillMode =\"" + str(backfillMode) + "\"\n")
 	envFile.write("maxJobs =\"" + str(maxJobs) + "\"\n")
 	envFile.write("maxWallTime =\"" + str(maxWallTime) + "\"\n")
+	envFile.write("userName =\""+userName+"\"\n")
