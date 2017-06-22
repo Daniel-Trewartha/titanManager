@@ -17,12 +17,12 @@ def main():
 
 def parseCampaign(campaign):
 	campaignName = campaign.find('campaignName').text
-	header = campaign.find('header').text
-	footer = campaign.find('footer').text
-	checkHeader = campaign.find('checkHeader').text
-	checkFooter = campaign.find('checkFooter').text
-	wallTime = parseTimeString(campaign.find('wallTime').text)
-	checkWallTime = parseTimeString(campaign.find('checkWallTime').text)
+	header = campaign.findtext('header')
+	footer = campaign.findtext('footer')
+	checkHeader = campaign.findtext('checkHeader')
+	checkFooter = campaign.findtext('checkFooter')
+	wallTime = parseTimeString(campaign.findtext('wallTime'))
+	checkWallTime = parseTimeString(campaign.findtext('checkWallTime'))
 	campaignObj = Campaign(campaignName=campaignName,wallTime=wallTime,header=header,footer=footer,checkHeader=checkHeader,checkFooter=checkFooter,checkWallTime=checkWallTime)
 	try:
 		Session.add(campaignObj)
@@ -40,13 +40,14 @@ def parseCampaign(campaign):
 		print("A campaign of this name already exists")
 
 def parseJob(job):
-	jobName = job.find('jobname').text
-	nodes = int(job.find('nodes').text)
-	wallTime = parseTimeString(job.find('wallTime').text)
-	eC = job.find('executionCommand').text
-	cC = job.find('outputCheckCommand').text
-	cOutLoc = job.find('outputCheckLoc').text
-	campaign = job.find('campaign').text
+	jobName = job.findtext('jobname')
+	nodes = int(job.findtext('nodes'))
+	wallTime = parseTimeString(job.findtext('wallTime'))
+	eC = job.findtext('executionCommand')
+	cC = job.findtext('outputCheckCommand')
+	cN = job.findtext('cN')
+	cOutLoc = job.findtext('outputCheckLoc')
+	campaign = job.findtext('campaign')
 	try:
 		cID = int(campaign)
 	except ValueError:

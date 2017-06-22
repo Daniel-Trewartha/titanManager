@@ -16,17 +16,23 @@ from src.stringUtilities import parseTimeString
 
 def main():
 
-	print "Campaign Status Report"
-	for c in Session.query(Campaign).all():
-		print c.statusReport(Session)
-	print "Submitting jobs"
-	sN,sJ = submitJobs(Session,backfillMode,backfillMode)
-	print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
-	for c in Session.query(Campaign).all():
-		sList = c.checkCompletionStatus(Session)
-		print "Campaign "+c.campaignName+" reports "+str(len(sList))+"new successful completions"
-		for j in sList:
-			print str(j.id)+" "+j.jobName+" successfully completed"
+	unfinishedBusiness = True
+	while unfinishedBusiness:
+		print "Campaign Status Report"
+		for c in Session.query(Campaign).all():
+			print c.statusReport(Session)
+		print "Submitting jobs"
+		sN,sJ = submitJobs(Session,backfillMode,backfillMode)
+		print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
+		for c in Session.query(Campaign).all():
+			sList = c.checkCompletionStatus(Session)
+			print "Campaign "+c.campaignName+" reports "+str(len(sList))+" new successful completions"
+			for j in sList:
+				print str(j.id)+" "+j.jobName+" successfully completed"
+		for c in Session.query(Campaign).all():
+			if (not c.unfinishedBusiness(Session)):
+				unfinishedBusiness = False
+		time.sleep(60)
 
 if __name__ == '__main__':
     with session_scope(engine) as Session:
