@@ -56,7 +56,7 @@ class campaignTest(unittest.TestCase):
 			self.failUnless(testJob1.status == "Submitted")
 			self.failUnless(testJob3.status == "Submitted")
 			self.failUnless(testJob1.pbsID is not None)
-			self.failUnless(testJob3.pbsId is not None)
+			self.failUnless(testJob3.pbsID is not None)
 			self.failUnless(testJob1.pbsID == testJob3.pbsID)
 			self.failUnless(delJob(testJob1))
 			self.failUnless(delJob(testJob3))
