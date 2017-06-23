@@ -29,9 +29,10 @@ def main():
 			print "Campaign "+c.campaignName+" reports "+str(len(sList))+" new successful completions"
 			for j in sList:
 				print str(j.id)+" "+j.jobName+" successfully completed"
+		unfinishedBusiness = False
 		for c in Session.query(Campaign).all():
-			if (not c.unfinishedBusiness(Session)):
-				unfinishedBusiness = False
+			if (c.unfinishedBusiness(Session)):
+				unfinishedBusiness = True
 		time.sleep(60)
 
 if __name__ == '__main__':
