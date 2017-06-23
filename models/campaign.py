@@ -42,6 +42,13 @@ class Campaign(Base):
         reportString += self.__statusCount(Session,"Failed")+" jobs failed \n"
         return reportString
 
+    def unfinishedBusiness(self,Session):
+        #Return true if there are still jobs to be run
+        for unfinishedStatus in ['Accepted','Missing Input','Ready','Submitted','R','C','Checking','Checked','Failed']:
+            if (not self.__statusCount(Session,unfinishedStatus) == 0):
+                return True
+        return False
+
     def submitJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
         #submit a bundle of up to maxJobs jobs that occupy fewer than maxNodes nodes
         #return number of nodes submitted
@@ -201,7 +208,7 @@ class Campaign(Base):
         if(jobList == []):
             jobList = self.jobs
         for j in jobList:
-            if (j.status == "Accepted" or j.status == "Failed"):
+            if (j.status == "Accepted" or j.status == "Failed" or j.status == "Missing Input"):
                 if (j.checkInput(Session)):
                     j.status =  "Ready"
                 else:

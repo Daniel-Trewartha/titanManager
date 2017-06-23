@@ -1,6 +1,3 @@
-# a little executable for submitting a job to
-# takes job name as argument
-
 import os, time, sys
 import xml.etree.ElementTree as ET
 from models.job import Job
@@ -8,31 +5,49 @@ from models.jobFile import File
 from models.campaign import Campaign
 from src.base import Base, session_scope, engine
 from src.stringUtilities import parseTimeString
+from sqlalchemy import exc
 
 def main():
-
-	#A job has: a name
-	#a number of nodes
-	#a walltime
-	#an execution string
-	#a campaign ID
-	#a list of required input files
-	#a list of expected output files
-	#a check string
-
-	#A file has:
-	#a name
-	#a directory
-	print("Extracting job from "+sys.argv[1])
+	print("Extracting from "+sys.argv[1])
 	xml = ET.parse(sys.argv[1])
-	job = xml.getroot()
-	jobName = job.find('jobname').text
-	nodes = int(job.find('nodes').text)
-	wallTime = parseTimeString(job.find('wallTime').text)
-	eC = job.find('executionCommand').text
-	cC = job.find('outputCheckCommand').text
-	cOutLoc = job.find('outputCheckLoc').text
-	campaign = job.find('campaign').text
+	for campaign in xml.findall('Campaign'):
+		parseCampaign(campaign)
+	for job in xml.findall('Job'):
+		parseJob(job)
+
+def parseCampaign(campaign):
+	campaignName = campaign.find('campaignName').text
+	header = campaign.findtext('header')
+	footer = campaign.findtext('footer')
+	checkHeader = campaign.findtext('checkHeader')
+	checkFooter = campaign.findtext('checkFooter')
+	wallTime = parseTimeString(campaign.findtext('wallTime'))
+	checkWallTime = parseTimeString(campaign.findtext('checkWallTime'))
+	campaignObj = Campaign(campaignName=campaignName,wallTime=wallTime,header=header,footer=footer,checkHeader=checkHeader,checkFooter=checkFooter,checkWallTime=checkWallTime)
+	try:
+		Session.add(campaignObj)
+		Session.commit()
+		print("Campaign details: ")
+		print("Campaign name: " + campaignObj.campaignName)
+		print("header: " + str(campaignObj.header))
+		print("footer: " + str(campaignObj.footer))
+		print("check header: " + str(campaignObj.checkHeader))
+		print("check footer: " + str(campaignObj.checkFooter))
+		print("walltime: " + str(campaignObj.wallTime))
+		print("check wall time: " + str(campaignObj.checkWallTime))
+	except exc.IntegrityError:
+		Session.rollback()
+		print("A campaign of this name already exists")
+
+def parseJob(job):
+	jobName = job.findtext('jobname')
+	nodes = int(job.findtext('nodes'))
+	wallTime = parseTimeString(job.findtext('wallTime'))
+	eC = job.findtext('executionCommand')
+	cC = job.findtext('outputCheckCommand')
+	cN = job.findtext('cN')
+	cOutLoc = job.findtext('outputCheckLoc')
+	campaign = job.findtext('campaign')
 	try:
 		cID = int(campaign)
 	except ValueError:
@@ -66,7 +81,6 @@ def main():
 	for iF in iFs:
 		if (not iF.exists(Session)):
 			print("Warning: input file "+os.path.join(iF.fileDir,iF.fileName)+" does not exist")
-	print("Job added to database")
 
 if __name__ == '__main__':
 	if (len(sys.argv) == 2):
@@ -74,4 +88,4 @@ if __name__ == '__main__':
 			Base.metadata.create_all(engine)
 			main()
 	else:
-		print("Submit name of xml file with job details")
+		print("Submit name of xml file")

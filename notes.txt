@@ -1,6 +1,5 @@
 TO ADD:
 
-unit tests need to be rewritten
 integration tests need to be written
 
 write docs, provide samples
