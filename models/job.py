@@ -23,6 +23,8 @@ class Job(Base):
     campaignID = Column('campaignID',Integer,ForeignKey("campaigns.id"))
     campaign = relationship("Campaign", back_populates="jobs")
 
+    numFails = Column('numFails',Integer)
+
     #successful completion of a job marked in two ways
     #existence of output files(if any)
     #running of an output check code
@@ -84,6 +86,7 @@ class Job(Base):
 def init(target, args, kwargs):
     target.status = "Accepted"
     target.pbsID = None
+    target.numFails = 0
 
 #Process jobname before inserting
 listen(Job, 'before_insert', Job._stripJobName)

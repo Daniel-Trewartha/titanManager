@@ -40,6 +40,7 @@ class Campaign(Base):
         reportString += self.__statusCount(Session,"Checked")+" jobs checked \n"
         reportString += self.__statusCount(Session,"Successful")+" jobs successful \n"
         reportString += self.__statusCount(Session,"Failed")+" jobs failed \n"
+        reportString += self.__statusCount(Session,"Requires Attention")+" jobs require attention \n"
         return reportString
 
     def unfinishedBusiness(self,Session):
@@ -131,6 +132,7 @@ class Campaign(Base):
                     successList.append(j)
                 else:
                     j.status = 'Failed'
+                    j.numFails += 1
         Session.commit()
         return successList
 
@@ -210,7 +212,10 @@ class Campaign(Base):
         for j in jobList:
             if (j.status == "Accepted" or j.status == "Failed" or j.status == "Missing Input"):
                 if (j.checkInput(Session)):
-                    j.status =  "Ready"
+                    if (j.numFails < 5):
+                        j.status =  "Ready"
+                    else:
+                        j.status = "Requires Attention"
                 else:
                     j.status = "Missing Input"
         Session.commit()
