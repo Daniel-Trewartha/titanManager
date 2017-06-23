@@ -46,7 +46,7 @@ class Campaign(Base):
     def unfinishedBusiness(self,Session):
         #Return true if there are still jobs to be run
         for unfinishedStatus in ['Accepted','Missing Input','Ready','Submitted','R','C','Checking','Checked','Failed']:
-            if (not self.__statusCount(Session,unfinishedStatus) == 0):
+            if (not self.__statusCount(Session,int(unfinishedStatus)) == int(0)):
                 return True
         return False
 
