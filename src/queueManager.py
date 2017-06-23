@@ -25,14 +25,18 @@ def submitJobs(Session,isWallTimeRestricted, isNodeRestricted):
         if (availableJobs <= 0):
             break
         if (c.checkWallTime <= parseTimeString(maxWallTime)):
-            nodes -= c.submitCheckJobs(Session,maxNodes=nodes)
-            availableJobs -= 1
+            tN = c.submitCheckJobs(Session,maxNodes=nodes)
+            if (tN > 0):
+                nodes -= tN
+                availableJobs -= 1
     for c in Session.query(Campaign).all():
         if (availableJobs <= 0):
             break
         if (c.wallTime <= parseTimeString(maxWallTime)):
-            nodes -= c.submitJobs(Session,maxNodes=nodes)
-            availableJobs -= 1
+            tN = c.submitJobs(Session,maxNodes=nodes)
+            if (tN > 0):
+                nodes -= tN
+                availableJobs -= 1
     submittedNodes -= nodes
     submittedJobs -= availableJobs
     return submittedNodes,submittedJobs

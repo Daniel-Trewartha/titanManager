@@ -1,6 +1,7 @@
 from src.base import Base,session_scope,engine
 import time
 import os
+from models.campaign import Campaign
 from models.job import Job
 from models.jobFile import File
 import sys

@@ -1,5 +1,6 @@
 import os, time, sys, datetime
 from datetime import timedelta
+from models.campaign import Campaign
 from models.job import Job
 from models.jobFile import File
 import src.pbsManager as pbsManager
@@ -17,8 +18,8 @@ def updateJobStatus(jobID,status,Session):
 #Externally callable job status checker
 def checkJobStatus(jobID,Session):
     thisJob = Session.query(Job).filter(Job.id == jobID).one()
-    thisJob.checkStatus(Session)
-    return "Job status "+str(thisJob.status)
+    complete = thisJob.checkCompletionStatus(Session)
+    return "Job complete: "+str(complete)
 
 if __name__ == '__main__':
     with session_scope(engine) as Session:
