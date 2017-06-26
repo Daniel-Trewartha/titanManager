@@ -6,16 +6,86 @@ from models.campaign import Campaign
 from src.base import Base, session_scope, engine
 from src.stringUtilities import parseTimeString
 from sqlalchemy import exc
+from sqlalchemy.orm import exc as ormexc
+from sqlalchemy.orm import class_mapper
+from src.stringUtilities import stripWhiteSpace,stripSlash
 
-def main():
-	print("Extracting from "+sys.argv[1])
-	xml = ET.parse(sys.argv[1])
+def postXML(xml):
 	for campaign in xml.findall('Campaign'):
-		parseCampaign(campaign)
+		__createCampaign(campaign)
 	for job in xml.findall('Job'):
-		parseJob(job)
+		__createJob(job)
 
-def parseCampaign(campaign):
+def patchXML(xml):
+	print "This functionality is not yet available"
+	#for campaign in xml.findall('Campaign'):
+	#	__updateCampaign(campaign)
+	#for job in xml.findall('Job'):
+	#	__updateJob(job)
+	#for f in xml.findall('File'):
+	#	__updateFile(f)
+
+def deleteXML(xml):
+	for c in xml.findall('Campaign'):
+		campaignName = c.findtext('campaignName')
+		try:
+			cID = int(campaignName)
+			campaign = Session.query(Campaign).get(cID)
+		except ValueError:
+			campaign = Session.query(Campaign).filter(Campaign.campaignName.like(campaignName)).one()
+		print("Deleting "+campaign.campaignName)
+		Session.delete(campaign)
+	Session.commit()
+	for j in xml.findall('Job'):
+		jobName = j.findtext('jobName')
+		try:
+			jId = int(jobName)
+			try:
+				job = Session.query(Job).get(jId)
+			except exc.NoResultFound:
+				print ("No Job of that name found. Perhaps it was already deleted with its parent campaign.")
+				continue
+
+		except ValueError:
+			try:
+				job = Session.query(Job).filter(Job.jobName.like(jobName)).one()
+			except ormexc.MultipleResultsFound:
+				print ("More than one job of that name found. Please specify by ID.")
+				for job in Session.query(Job).filter(Job.jobName.like(jobName)).all():
+					print(job.jobName,job.ID)
+				continue
+			except ormexc.NoResultFound:
+				print ("No Job of that name found. Perhaps it was already deleted with its parent campaign.")
+				continue
+		print("Deleting "+job.jobName)
+		Session.delete(job)
+	Session.commit()
+	for f in xml.findall("File"):
+		fileName = f.findtext('fileName')
+		try:
+			fId = int(fileName)
+			try:
+				file = Session.query(File).get(fId)
+			except exc.NoResultFound:
+				print ("No file of that name found. Perhaps it was already deleted with its parent job.")
+				continue
+
+		except ValueError:
+			try:
+				file = Session.query(File).filter(File.fileName.like(fileName)).one()
+			except ormexc.MultipleResultsFound:
+				print ("More than one file of that name found. Please specify by ID.")
+				for file in Session.query(File).filter(File.fileName.like(fileName)).all():
+					print(file.jobName,file.ID)
+				continue
+			except ormexc.NoResultFound:
+				print ("No file of that name found. Perhaps it was already deleted with its parent job.")
+				continue
+		print("Deleting "+file.fileName)
+		Session.delete(file)
+	Session.commit()
+
+def __createCampaign(campaign):
 	campaignName = campaign.find('campaignName').text
 	header = campaign.findtext('header')
 	footer = campaign.findtext('footer')
@@ -39,7 +109,21 @@ def parseCampaign(campaign):
 		Session.rollback()
 		print("A campaign of this name already exists")
 
-def parseJob(job):
+def __updateCampaign(c):
+	campaignName = c.findtext('campaignName')
+	try:
+		cID = int(campaignName)
+		campaign = Session.query(Campaign).get(cID)
+	except ValueError:
+		campaign = Session.query(Campaign).filter(Campaign.campaignName.like(campaignName)).one()
+	for attr in campaign.__table__.columns._data.keys()[1:]:
+		value = c.findtext(attr)
+		if (value is not None):
+			print eval("campaign."+stripSlash(stripWhiteSpace(attr)))
+			eval("campaign."+stripSlash(stripWhiteSpace(attr))+" = \""+value+"\"")
+			print eval("campaign."+stripSlash(stripWhiteSpace(attr)))
+
+def __createJob(job):
 	jobName = job.findtext('jobname')
 	nodes = int(job.findtext('nodes'))
 	wallTime = parseTimeString(job.findtext('wallTime'))
@@ -83,9 +167,16 @@ def parseJob(job):
 			print("Warning: input file "+os.path.join(iF.fileDir,iF.fileName)+" does not exist")
 
 if __name__ == '__main__':
-	if (len(sys.argv) == 2):
-		with session_scope(engine) as Session:
-			Base.metadata.create_all(engine)
-			main()
-	else:
-		print("Submit name of xml file")
+	with session_scope(engine) as Session:
+		Base.metadata.create_all(engine)
+		if (len(sys.argv) == 3):
+			print("Extracting from "+sys.argv[2])
+			xml = ET.parse(sys.argv[2])
+			if (sys.argv[1] == 'Post'):
+				postXML(xml)
+			elif (sys.argv[1] == 'Patch'):
+				patchXML(xml)
+			elif (sys.argv[1] == 'Delete'):
+				deleteXML(xml)
+		else:
+			print("Submit name of xml file")

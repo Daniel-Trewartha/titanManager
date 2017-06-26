@@ -19,7 +19,7 @@ class Job(Base):
     wallTime = Column('wallTime',Interval,default=datetime.timedelta(hours=1))
     status = Column('status',String)
     pbsID = Column('pbsID',Integer)
-    files = relationship("File", back_populates="job")
+    files = relationship("File", back_populates="job",cascade="all, delete-orphan")
     campaignID = Column('campaignID',Integer,ForeignKey("campaigns.id"))
     campaign = relationship("Campaign", back_populates="jobs")
 
