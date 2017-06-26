@@ -1,5 +1,6 @@
 TO ADD:
 
-integration tests need to be written
-
-write docs, provide samples
+walltime
+swap xName -> name
+output check check script
+example run through

@@ -7,15 +7,16 @@ from sqlalchemy.event import listen
 from src.base import Base
 from job import Job
 from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes
-from src.stringUtilities import stripWhiteSpace,stripSlash
+from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
 
 #A collection of jobs that are compatible to be wrapran.
 #It is the responsibility of the user to ensure that jobs have compatible walltimes, node requirements, modules etc.
 class Campaign(Base):
     __tablename__ = 'campaigns'
+    __name__ = 'campaign'
 
     id = Column(Integer, primary_key=True)
-    campaignName = Column('campaignName',String,unique=True)
+    name = Column('name',String,unique=True)
     jobs = relationship("Job", back_populates="campaign",cascade="all, delete-orphan")
     header = Column('header',String)
     footer = Column('footer',String)
@@ -28,7 +29,7 @@ class Campaign(Base):
     def statusReport(self,Session):
         #Produce a report on the status of jobs in this campaign
         reportString = ""
-        reportString += "Campaign "+self.campaignName+", id "+str(self.id)+" \n"
+        reportString += "Campaign "+self.name+", id "+str(self.id)+" \n"
         reportString += str(len(self.jobs))+" total jobs \n"
         reportString += self.__statusCount(Session,"Accepted")+" jobs accepted \n"
         reportString += self.__statusCount(Session,"Missing Input")+" jobs missing input \n"
@@ -140,7 +141,7 @@ class Campaign(Base):
 
     def __createSubmissionScript(self, Session, jobList):
         #construct a job submission script from a list of jobs
-        scriptName = self.campaignName+".csh"
+        scriptName = self.name+".csh"
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
@@ -151,7 +152,7 @@ class Campaign(Base):
         print wraprun
         with open(scriptName,'w') as script:
             script.write("#PBS -A NPH103\n")
-            script.write("#PBS -N "+self.campaignName+"\n")
+            script.write("#PBS -N "+self.name+"\n")
             if(self.wallTime):
                 script.write("#PBS -l walltime="+str(self.wallTime)+"\n")
             else: 
@@ -175,7 +176,7 @@ class Campaign(Base):
 
     def __createCheckSubmissionScript(self, Session, jobList):
         #construct a job check submission script from a list of jobs
-        scriptName = self.campaignName+"Check.csh"
+        scriptName = self.name+"Check.csh"
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
@@ -189,7 +190,7 @@ class Campaign(Base):
         print wraprun
         with open(scriptName,'w') as script:
             script.write("#PBS -A NPH103\n")
-            script.write("#PBS -N "+self.campaignName+"Check\n")
+            script.write("#PBS -N "+self.name+"Check\n")
             if(self.wallTime):
                 script.write("#PBS -l walltime="+str(self.checkWallTime)+"\n")
             else: 
@@ -223,3 +224,14 @@ class Campaign(Base):
     def __statusCount(self,Session,status):
         #Return the number of jobs with status status in this campaign
         return str(Session.query(Job).filter(Job.campaignID == self.id).filter(Job.status == status).count())
+
+    @staticmethod
+    def _parseWallTime(mapper, connection, target):
+        if (target.wallTime is not None):
+            target.wallTime = parseTimeString(str(target.wallTime))
+        if (target.checkWallTime is not None):
+            target.checkWallTime = parseTimeString(str(target.checkWallTime))
+#Event Listeners
+#Process walltime and checkwalltime
+listen(Campaign, 'before_insert', Campaign._parseWallTime)
+listen(Campaign, 'before_update', Campaign._parseWallTime)

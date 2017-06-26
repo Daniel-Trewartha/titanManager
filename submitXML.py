@@ -11,29 +11,39 @@ from sqlalchemy.orm import class_mapper
 from src.stringUtilities import stripWhiteSpace,stripSlash
 
 def postXML(xml):
-	for campaign in xml.findall('Campaign'):
-		__createCampaign(campaign)
-	for job in xml.findall('Job'):
-		__createJob(job)
+	for c in xml.findall('Campaign'):
+		thisCampaign = __createModel(Campaign,c)
+		Session.add(thisCampaign)
+		Session.commit()
+	for j in xml.findall('Job'):
+		thisJob = __createModel(Job,j)
+		Session.add(thisJob)
+		Session.commit()
+		for iF in j.find('inputFiles').findall('elem'):
+			thisFile = __createFile(iF,'input',thisJob.id)
+			Session.add(thisFile)
+		for oF in j.find('outputFiles').findall('elem'):
+			thisFile = __createFile(oF,'output',thisJob.id)
+			Session.add(thisFile)
+		Session.commit()
 
 def patchXML(xml):
-	print "This functionality is not yet available"
-	#for campaign in xml.findall('Campaign'):
-	#	__updateCampaign(campaign)
-	#for job in xml.findall('Job'):
-	#	__updateJob(job)
-	#for f in xml.findall('File'):
-	#	__updateFile(f)
+	for campaign in xml.findall('Campaign'):
+		__updateModel(Campaign,campaign)
+	for job in xml.findall('Job'):
+		__updateJob(job)
+	for f in xml.findall('File'):
+		__updateFile(f)
 
 def deleteXML(xml):
 	for c in xml.findall('Campaign'):
-		campaignName = c.findtext('campaignName')
+		campaignName = c.findtext('name')
 		try:
 			cID = int(campaignName)
 			campaign = Session.query(Campaign).get(cID)
 		except ValueError:
-			campaign = Session.query(Campaign).filter(Campaign.campaignName.like(campaignName)).one()
-		print("Deleting "+campaign.campaignName)
+			campaign = Session.query(Campaign).filter(Campaign.name.like(campaignName)).one()
+		print("Deleting "+campaign.name)
 		Session.delete(campaign)
 	Session.commit()
 	for j in xml.findall('Job'):
@@ -85,86 +95,39 @@ def deleteXML(xml):
 		Session.delete(file)
 	Session.commit()
 
-def __createCampaign(campaign):
-	campaignName = campaign.find('campaignName').text
-	header = campaign.findtext('header')
-	footer = campaign.findtext('footer')
-	checkHeader = campaign.findtext('checkHeader')
-	checkFooter = campaign.findtext('checkFooter')
-	wallTime = parseTimeString(campaign.findtext('wallTime'))
-	checkWallTime = parseTimeString(campaign.findtext('checkWallTime'))
-	campaignObj = Campaign(campaignName=campaignName,wallTime=wallTime,header=header,footer=footer,checkHeader=checkHeader,checkFooter=checkFooter,checkWallTime=checkWallTime)
-	try:
-		Session.add(campaignObj)
-		Session.commit()
-		print("Campaign details: ")
-		print("Campaign name: " + campaignObj.campaignName)
-		print("header: " + str(campaignObj.header))
-		print("footer: " + str(campaignObj.footer))
-		print("check header: " + str(campaignObj.checkHeader))
-		print("check footer: " + str(campaignObj.checkFooter))
-		print("walltime: " + str(campaignObj.wallTime))
-		print("check wall time: " + str(campaignObj.checkWallTime))
-	except exc.IntegrityError:
-		Session.rollback()
-		print("A campaign of this name already exists")
+def __createFile(f,ioType,jobID):
+	file = __createModel(File,f)
+	file.ioType = ioType
+	file.jobID = jobID
+	print("ioType: "+ioType)
+	print("jobID: "+str(jobID))
+	return file
 
-def __updateCampaign(c):
-	campaignName = c.findtext('campaignName')
+def __createModel(modelObj,m):
+	attrDict = {}
+	print("Creating a "+modelObj.__name__)
+	for attr in modelObj.__table__.columns._data.keys()[1:]:
+		value = m.findtext(attr)
+		if value is not None:
+			print(attr+": "+value)
+			attrDict[attr] = value
+		model = modelObj(**attrDict)
+	return model
+
+def __updateModel(modelObj,m):
+	modelToUpdate = m.findtext(model.__name__)
 	try:
-		cID = int(campaignName)
-		campaign = Session.query(Campaign).get(cID)
+		mID = int(modelToUpdate)
+		model = Session.query(Model).get(mID)
 	except ValueError:
-		campaign = Session.query(Campaign).filter(Campaign.campaignName.like(campaignName)).one()
-	for attr in campaign.__table__.columns._data.keys()[1:]:
+		model = Session.query(Model).filter(Model.name.like(modelToUpdate)).one()
+	print("Patching "+model.__name__+" "+model.name+" id: "+str(model.id))
+	for attr in model.__table__.columns._data.keys()[1:]:
 		value = c.findtext(attr)
 		if (value is not None):
-			print eval("campaign."+stripSlash(stripWhiteSpace(attr)))
-			eval("campaign."+stripSlash(stripWhiteSpace(attr))+" = \""+value+"\"")
-			print eval("campaign."+stripSlash(stripWhiteSpace(attr)))
-
-def __createJob(job):
-	jobName = job.findtext('jobname')
-	nodes = int(job.findtext('nodes'))
-	wallTime = parseTimeString(job.findtext('wallTime'))
-	eC = job.findtext('executionCommand')
-	cC = job.findtext('outputCheckCommand')
-	cN = job.findtext('cN')
-	cOutLoc = job.findtext('outputCheckLoc')
-	campaign = job.findtext('campaign')
-	try:
-		cID = int(campaign)
-	except ValueError:
-		cID = Session.query(Campaign).filter(Campaign.campaignName.like(campaign)).one().id
-	jobObj = Job(jobName=jobName,nodes=nodes,wallTime=wallTime,executionCommand=eC,checkOutputScript=cC,checkOutputLoc=cOutLoc,campaignID=cID)
-	Session.add(jobObj)
-	Session.commit()
-	print("Job details: ")
-	print("Jobname: " + jobObj.jobName)
-	print("Nodes: " + str(jobObj.nodes))
-	print("Wall Time: " + str(jobObj.wallTime))
-	print("Execution Command: " + jobObj.executionCommand)
-	iFs = []
-	print("Input Files: ")
-	for iF in job.find('inputFiles').findall('elem'):
-		name = iF.find('filename').text
-		directory = iF.find('directory').text
-		iFs.append(File(fileName=name,fileDir=directory,ioType='input',jobID=jobObj.id))
-		Session.add(iFs[-1])
-		print(os.path.join(iFs[-1].fileDir,iFs[-1].fileName))
-	oFs = []
-	print("Output Files: ")
-	for oF in job.find('outputFiles').findall('elem'):
-		name = oF.find('filename').text
-		directory = oF.find('directory').text
-		oFs.append(File(fileName=name,fileDir=directory,ioType='output',jobID=jobObj.id))
-		Session.add(oFs[-1])
-		print(os.path.join(oFs[-1].fileDir,oFs[-1].fileName))
-	jobObj.files = iFs+oFs
-	Session.commit()
-	for iF in iFs:
-		if (not iF.exists(Session)):
-			print("Warning: input file "+os.path.join(iF.fileDir,iF.fileName)+" does not exist")
+			print("Setting "+attr+" to "+value)
+			setattr(model, attr, value)
+	return model
 
 if __name__ == '__main__':
 	with session_scope(engine) as Session:
