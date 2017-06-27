@@ -2,3 +2,5 @@
 env/environment.py
 env/*.db
 titanManager/
+*.xml
+*.o[0-9]*

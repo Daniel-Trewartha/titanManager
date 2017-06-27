@@ -13,31 +13,38 @@ from src.stringUtilities import stripWhiteSpace,stripSlash
 def postXML(xml):
 	for c in xml.findall('Campaign'):
 		thisCampaign = __createModel(Campaign,c)
-		Session.add(thisCampaign)
-		Session.commit()
+		if (thisCampaign is not None):
+			Session.add(thisCampaign)
+	Session.commit()
 	for j in xml.findall('Job'):
 		thisJob = __createModel(Job,j)
-		Session.add(thisJob)
-		Session.commit()
-		for iF in j.find('inputFiles').findall('elem'):
-			thisFile = __createFile(iF,'input',thisJob.id)
-			Session.add(thisFile)
-		for oF in j.find('outputFiles').findall('elem'):
-			thisFile = __createFile(oF,'output',thisJob.id)
-			Session.add(thisFile)
-		Session.commit()
+		if (thisJob is not None):
+			Session.add(thisJob)
+			Session.commit()
+			for iF in j.find('inputFiles').findall('elem'):
+				thisFile = __createFile(iF,'input',thisJob.id)
+				if (thisFile is not None):
+					Session.add(thisFile)
+			for oF in j.find('outputFiles').findall('elem'):
+				thisFile = __createFile(oF,'output',thisJob.id)
+				if (thisFile is not None):
+					Session.add(thisFile)
+			Session.commit()
 
 def patchXML(xml):
 	for campaign in xml.findall('Campaign'):
-		__updateModel(Campaign,campaign)
+		thisCampaign = __updateModel(Campaign,campaign)
 	for job in xml.findall('Job'):
 		thisJob = __updateModel(job)
-		for iF in j.find('inputFiles').findall('elem'):
-			thisFile = __createFile(iF,'input',thisJob.id)
-			Session.add(thisFile)
-		for oF in j.find('outputFiles').findall('elem'):
-			thisFile = __createFile(oF,'output',thisJob.id)
-			Session.add(thisFile)
+		if (thisJob is not None):
+			for iF in j.find('inputFiles').findall('elem'):
+				thisFile = __createFile(iF,'input',thisJob.id)
+				if (thisFile is not None):
+					Session.add(thisFile)
+			for oF in j.find('outputFiles').findall('elem'):
+				thisFile = __createFile(oF,'output',thisJob.id)
+				if (thisFile is not None):
+					Session.add(thisFile)
 	for f in xml.findall('File'):
 		__updateModel(f)
 	Session.commit()
@@ -45,13 +52,16 @@ def patchXML(xml):
 def deleteXML(xml):
 	for campaign in xml.findall('Campaign'):
 		m = __deleteModel(Campaign,campaign)
-		Session.delete(m)
+		if (m is not None):
+			Session.delete(m)
 	for job in xml.findall('Job'):
 		m = __deleteModel(job)
-		Session.delete(m)
+		if (m is not None):
+			Session.delete(m)
 	for f in xml.findall('File'):
 		m = __deleteModel(f)
-		Session.delete(m)
+		if (m is not None):
+			Session.delete(m)
 	Session.commit()
 
 def __createFile(f,ioType,jobID):
@@ -70,8 +80,11 @@ def __createModel(modelObj,m):
 		if value is not None:
 			print(attr+": "+value)
 			attrDict[attr] = value
+	if (attrDict):
 		model = modelObj(**attrDict)
-	return model
+		return model
+	else:
+		return None
 
 def __updateModel(modelObj,m):
 	modelToUpdate = m.findtext(modelObj.__name__)
@@ -82,10 +95,10 @@ def __updateModel(modelObj,m):
 		try:
 			model = Session.query(Model).filter(Model.name.like(modelToUpdate)).one()
 		except ormexc.MultipleResultsFound:
-			print ("More than one "+model.__name__" of that name found. Please specify by ID.")
+			print("More than one "+model.__name__+" of that name found. Please specify by ID.")
 			for mod in Session.query(Model).filter(Model.name.like(modelToUpdate)).one():
 				print mod.name, mod.id
-			continue
+			return None
 	print("Patching "+model.__name__+" "+model.name+" id: "+str(model.id))
 	for attr in model.__table__.columns._data.keys()[1:]:
 		value = c.findtext(attr)
@@ -103,16 +116,16 @@ def __deleteModel(modelObj,m):
 		try:
 			model = Session.query(Model).filter(Model.name.like(modelToUpdate)).one()
 		except ormexc.MultipleResultsFound:
-			print ("More than one "+model.__name__+" of that name found. Please specify by ID.")
+			print("More than one "+model.__name__+" of that name found. Please specify by ID.")
 			for mod in Session.query(Model).filter(Model.name.like(modelToUpdate)).one():
 				print mod.name, mod.id
-			continue
+			return None
 		except ormexc.NoResultFound:
-			print ("No "+model.__name__+" of that name or id found. It may have been cascade deleted already.")
-			continue
+			print("No "+model.__name__+" of that name or id found. It may have been cascade deleted already.")
+			return None
 	except ormexc.NoResultFound:
-		print ("No "+model.__name__+" of that name or id found. It may have been cascade deleted already.")
-		continue
+		print("No "+model.__name__+" of that name or id found. It may have been cascade deleted already.")
+		return None
 	print("Deleting "+model.name+" "+str(model.id))
 	return model
 
