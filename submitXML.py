@@ -31,68 +31,27 @@ def patchXML(xml):
 	for campaign in xml.findall('Campaign'):
 		__updateModel(Campaign,campaign)
 	for job in xml.findall('Job'):
-		__updateJob(job)
+		thisJob = __updateModel(job)
+		for iF in j.find('inputFiles').findall('elem'):
+			thisFile = __createFile(iF,'input',thisJob.id)
+			Session.add(thisFile)
+		for oF in j.find('outputFiles').findall('elem'):
+			thisFile = __createFile(oF,'output',thisJob.id)
+			Session.add(thisFile)
 	for f in xml.findall('File'):
-		__updateFile(f)
+		__updateModel(f)
+	Session.commit()
 
 def deleteXML(xml):
-	for c in xml.findall('Campaign'):
-		campaignName = c.findtext('name')
-		try:
-			cID = int(campaignName)
-			campaign = Session.query(Campaign).get(cID)
-		except ValueError:
-			campaign = Session.query(Campaign).filter(Campaign.name.like(campaignName)).one()
-		print("Deleting "+campaign.name)
-		Session.delete(campaign)
-	Session.commit()
-	for j in xml.findall('Job'):
-		jobName = j.findtext('jobName')
-		try:
-			jId = int(jobName)
-			try:
-				job = Session.query(Job).get(jId)
-			except exc.NoResultFound:
-				print ("No Job of that name found. Perhaps it was already deleted with its parent campaign.")
-				continue
-
-		except ValueError:
-			try:
-				job = Session.query(Job).filter(Job.jobName.like(jobName)).one()
-			except ormexc.MultipleResultsFound:
-				print ("More than one job of that name found. Please specify by ID.")
-				for job in Session.query(Job).filter(Job.jobName.like(jobName)).all():
-					print(job.jobName,job.ID)
-				continue
-			except ormexc.NoResultFound:
-				print ("No Job of that name found. Perhaps it was already deleted with its parent campaign.")
-				continue
-		print("Deleting "+job.jobName)
-		Session.delete(job)
-	Session.commit()
-	for f in xml.findall("File"):
-		fileName = f.findtext('fileName')
-		try:
-			fId = int(fileName)
-			try:
-				file = Session.query(File).get(fId)
-			except exc.NoResultFound:
-				print ("No file of that name found. Perhaps it was already deleted with its parent job.")
-				continue
-
-		except ValueError:
-			try:
-				file = Session.query(File).filter(File.fileName.like(fileName)).one()
-			except ormexc.MultipleResultsFound:
-				print ("More than one file of that name found. Please specify by ID.")
-				for file in Session.query(File).filter(File.fileName.like(fileName)).all():
-					print(file.jobName,file.ID)
-				continue
-			except ormexc.NoResultFound:
-				print ("No file of that name found. Perhaps it was already deleted with its parent job.")
-				continue
-		print("Deleting "+file.fileName)
-		Session.delete(file)
+	for campaign in xml.findall('Campaign'):
+		m = __deleteModel(Campaign,campaign)
+		Session.delete(m)
+	for job in xml.findall('Job'):
+		m = __deleteModel(job)
+		Session.delete(m)
+	for f in xml.findall('File'):
+		m = __deleteModel(f)
+		Session.delete(m)
 	Session.commit()
 
 def __createFile(f,ioType,jobID):
@@ -115,18 +74,46 @@ def __createModel(modelObj,m):
 	return model
 
 def __updateModel(modelObj,m):
-	modelToUpdate = m.findtext(model.__name__)
+	modelToUpdate = m.findtext(modelObj.__name__)
 	try:
 		mID = int(modelToUpdate)
 		model = Session.query(Model).get(mID)
 	except ValueError:
-		model = Session.query(Model).filter(Model.name.like(modelToUpdate)).one()
+		try:
+			model = Session.query(Model).filter(Model.name.like(modelToUpdate)).one()
+		except ormexc.MultipleResultsFound:
+			print ("More than one "+model.__name__" of that name found. Please specify by ID.")
+			for mod in Session.query(Model).filter(Model.name.like(modelToUpdate)).one():
+				print mod.name, mod.id
+			continue
 	print("Patching "+model.__name__+" "+model.name+" id: "+str(model.id))
 	for attr in model.__table__.columns._data.keys()[1:]:
 		value = c.findtext(attr)
 		if (value is not None):
 			print("Setting "+attr+" to "+value)
 			setattr(model, attr, value)
+	return model
+
+def __deleteModel(modelObj,m):
+	modelToDelete = m.findtext(modelObj.__name__)
+	try:
+		mID = int(modelToDelete)
+		model = Session.query(Model).get(mID)
+	except ValueError:
+		try:
+			model = Session.query(Model).filter(Model.name.like(modelToUpdate)).one()
+		except ormexc.MultipleResultsFound:
+			print ("More than one "+model.__name__+" of that name found. Please specify by ID.")
+			for mod in Session.query(Model).filter(Model.name.like(modelToUpdate)).one():
+				print mod.name, mod.id
+			continue
+		except ormexc.NoResultFound:
+			print ("No "+model.__name__+" of that name or id found. It may have been cascade deleted already.")
+			continue
+	except ormexc.NoResultFound:
+		print ("No "+model.__name__+" of that name or id found. It may have been cascade deleted already.")
+		continue
+	print("Deleting "+model.name+" "+str(model.id))
 	return model
 
 if __name__ == '__main__':
