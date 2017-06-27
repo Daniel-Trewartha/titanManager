@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event,
 from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
+from sqlalchemy.ext.hybrid import hybrid_property
 from src.base import Base
 from job import Job
 from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes, maxWallTime
@@ -22,8 +23,8 @@ class Campaign(Base):
     footer = Column('footer',String)
     checkHeader = Column('checkHeader',String)
     checkFooter = Column('checkFooter',String)
-    wallTime = Column('walltime',Interval)
-    checkWallTime = Column('checkWallTime',Interval)
+    _wallTime = Column('wallTime',Interval)
+    _checkWallTime = Column('checkWallTime',Interval)
 
     #Public Methods
     def statusReport(self,Session):
@@ -137,6 +138,38 @@ class Campaign(Base):
         Session.commit()
         return successList
 
+    #hybrid properties
+
+    @hybrid_property
+    def wallTime(self):
+        if (self._wallTime):
+            return self._wallTime
+        else:
+            maxWT = parseTimeString("00:00:10")
+            for j in self.jobs:
+                if ((j.wallTime is not None) and j.wallTime >maxWT):
+                    maxWT = j.wallTime
+            return maxWT
+
+    @hybrid_property
+    def checkWallTime(self):
+        if (self._checkWallTime):
+            return self._checkWallTime
+        else:
+            maxWT = parseTimeString("00:00:10")
+            for j in self.jobs:
+                if ((j.checkWallTime is not None) and j.checkWallTime >maxWT):
+                    maxWT = j.checkWallTime
+            return maxWT
+
+    @wallTime.setter
+    def wallTime(self,wallTime):
+        self._wallTime = wallTime
+
+    @checkWallTime.setter
+    def checkWallTime(self,checkWallTime):
+        self._checkWallTime = checkWallTime
+
     ## Private Methods
 
     def __createSubmissionScript(self, Session, jobList):
@@ -235,10 +268,10 @@ class Campaign(Base):
 
     @staticmethod
     def _parseWallTime(mapper, connection, target):
-        if (target.wallTime is not None):
-            target.wallTime = parseTimeString(str(target.wallTime))
-        if (target.checkWallTime is not None):
-            target.checkWallTime = parseTimeString(str(target.checkWallTime))
+        if (target._wallTime is not None):
+            target._wallTime = parseTimeString(str(target._wallTime))
+        if (target._checkWallTime is not None):
+            target._checkWallTime = parseTimeString(str(target._checkWallTime))
 #Event Listeners
 #Process walltime and checkwalltime
 listen(Campaign, 'before_insert', Campaign._parseWallTime)

@@ -20,8 +20,9 @@ class jobFileTest(unittest.TestCase):
 		Base.metadata.drop_all(engine)
 
 	def insertTestJob(self,Session):
-		q = Session.query(Campaign).filter(Campaign.name.like(self.dummyCampaign.name)).one()
-		if (not Session.query(q.exists())):
+		try:
+			q = Session.query(Campaign).filter(Campaign.name.like(self.dummyCampaign.name)).one()
+		except:
 			Session.add(self.dummyCampaign)
 			Session.commit()
 		testJob = Job(campaignID=self.dummyCampaign.id)

@@ -87,15 +87,15 @@ def __createJob(jobObj,j):
 	return job
 
 def __createModel(modelObj,m):
-	attrDict = {}
 	print("Creating a "+modelObj.__name__)
-	for attr in modelObj.__table__.columns._data.keys()[1:]:
-		value = m.findtext(attr)
-		if value is not None:
-			print(attr+": "+value)
-			attrDict[attr] = value
-	if (attrDict):
-		model = modelObj(**attrDict)
+	name = m.findtext('name')
+	if name is not None:
+		model = modelObj(name=name)
+		for attr in modelObj.__table__.columns._data.keys()[1:]:
+			value = m.findtext(attr)
+			if value is not None:
+				print(attr+": "+value)
+				setattr(model, attr, value)
 		return model
 	else:
 		return None

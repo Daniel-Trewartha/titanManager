@@ -33,7 +33,7 @@ class jobTest(unittest.TestCase):
 		with session_scope(engine) as Session:
 			Session.add(self.dummyCampaign)
 			Session.commit()
-			testJob = Job(campainID=self.dummyCampaign.id)
+			testJob = Job(campaignID=self.dummyCampaign.id)
 			Session.add(testJob)
 			Session.commit()
 			testFile1 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
