@@ -78,7 +78,7 @@ class jobTest(unittest.TestCase):
 			Session.add(self.dummyCampaign)
 			Session.commit()
 			outputLoc = os.path.join(os.path.split(os.path.abspath(__file__))[0],self.fake.file_name())
-			testJob = Job(campaignID=self.dummyCampaign.id,checkOutputLoc=outputLoc)
+			testJob = Job(campaignID=self.dummyCampaign.id,checkOutputScript="if [ -e "+outputLoc+" ]; then echo 'True'; fi")
 			Session.add(testJob)
 			Session.commit()
 

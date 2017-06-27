@@ -58,7 +58,7 @@ class Job(Base):
         #if no output file specified, return true
         if (self.checkOutputScript is not None):
             checkOut = subprocess.Popen(self.checkOutputScript,stdout=subprocess.PIPE,shell=True)
-            success = pbsSubmit.stdout.read().strip()
+            success = checkOut.stdout.read().strip()
             if (success):
                 return True
             else:
@@ -78,8 +78,6 @@ class Job(Base):
     def _stripJobName(mapper, connection, target):
         if (target.name is not None):
             target.name = stripSlash(stripWhiteSpace(target.name))
-        if (target.checkOutputLoc is not None):
-            target.checkOutputLoc = stripWhiteSpace(target.checkOutputLoc)
 
     @staticmethod
     def _parseWallTime(mapper, connection, target):

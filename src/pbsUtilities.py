@@ -24,8 +24,9 @@ def getQueuedJobs():
 	queuedStats = ['Q','H','R','S']
 	queuedJobs = 0
 	for line in str.split(qstatOut,'\n'):
-		if (line and str.split(line)[1] == userName):
-			if str.split(line)[9] in queuedStats:
+		splLine = str.split(line)
+		if (len(splLine) == 11 and splLine[1] == userName):
+			if splLine[9] in queuedStats:
 				queuedJobs += 1
 	return queuedJobs
 
@@ -35,6 +36,6 @@ def getJobStatuses():
 	jobsDict = {}
 	for line in str.split(qstatOut,'\n'):
 		splLine = str.split(line)
-		if (splLine and splLine[1] == userName):
+		if (len(splLine) == 11 and splLine[1] == userName):
 			jobsDict[splLine[0]] = splLine[9]
 	return jobsDict

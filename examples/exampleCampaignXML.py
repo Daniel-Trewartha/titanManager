@@ -53,13 +53,13 @@ iF1 = ET.SubElement(iF,'elem')
 #Mandatory fields for a file - name, fileDir
 ET.SubElement(iF1,'name').text = 'testJob1In.data'
 ET.SubElement(iF1,'fileDir').text = workDir
-with open(os.path.join(workDir,'testJob1In.data')) as f:
+with open(os.path.join(workDir,'testJob1In.data'),'w') as f:
 	f.write("Test Job 1 Input")
 #Can add as many of these as needed
 iF2 = ET.SubElement(iF,'elem')
 ET.SubElement(iF2,'name').text = 'testJob1Executable.data'
 ET.SubElement(iF2,'fileDir').text = workDir
-with open(os.path.join(workDir,'testJob1Executable.data')) as f:
+with open(os.path.join(workDir,'testJob1Executable.data'),'w') as f:
 	f.write("Test Job 1's Executable")
 #A list of output files we expect to be created
 #Job will not be marked successful until these exist
@@ -86,12 +86,12 @@ iF = ET.SubElement(job2,'inputFiles')
 iF1 = ET.SubElement(iF,'elem')
 ET.SubElement(iF1,'name').text = 'testJob2In.data'
 ET.SubElement(iF1,'fileDir').text = workDir
-with open(os.path.join(workDir,'testJob2In.data')) as f:
+with open(os.path.join(workDir,'testJob2In.data'),'w') as f:
 	f.write("Test Job 2 Input")
 iF2 = ET.SubElement(iF,'elem')
 ET.SubElement(iF2,'name').text = 'testJob2Executable.data'
 ET.SubElement(iF2,'fileDir').text = workDir
-with open(os.path.join(workDir,'testJob2Executable.data')) as f:
+with open(os.path.join(workDir,'testJob2Executable.data'),'w') as f:
 	f.write("Test Job 2's Executable")
 oF = ET.SubElement(job2,'outputFiles')
 oF1 = ET.SubElement(oF,'elem')
