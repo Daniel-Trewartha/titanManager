@@ -11,7 +11,8 @@ from models.job import Job
 from models.jobFile import File
 from models.campaign import Campaign
 from src.base import Base, session_scope, engine
-from src.queueManager import submitJobs, getJobStatuses
+from src.queueManager import submitJobs
+from src.pbsUtilities import getJobStatuses
 from src.stringUtilities import parseTimeString
 
 def main():
