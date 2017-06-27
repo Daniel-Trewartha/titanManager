@@ -182,7 +182,6 @@ class Campaign(Base):
             wraprun += '-n '+str(j.nodes)
             wraprun += ' '+j.executionCommand+' : '
         wraprun = wraprun[:-2]
-        print wraprun
         with open(scriptName,'w') as script:
             script.write("#PBS -A NPH103\n")
             script.write("#PBS -N "+self.name+"\n")
@@ -224,7 +223,6 @@ class Campaign(Base):
             else:
                 print "Warning: job " + j.jobName+", "+str(j.id)+" has no check script"
         wraprun = wraprun[:-2]
-        print wraprun
         with open(scriptName,'w') as script:
             script.write("#PBS -A NPH103\n")
             script.write("#PBS -N "+self.name+"Check\n")
@@ -272,7 +270,15 @@ class Campaign(Base):
             target._wallTime = parseTimeString(str(target._wallTime))
         if (target._checkWallTime is not None):
             target._checkWallTime = parseTimeString(str(target._checkWallTime))
+
+    @staticmethod
+    def _stripCampaignName(mapper, connection, target):
+        if (target.name is not None):
+            target.name = stripSlash(stripWhiteSpace(target.name))
 #Event Listeners
 #Process walltime and checkwalltime
 listen(Campaign, 'before_insert', Campaign._parseWallTime)
 listen(Campaign, 'before_update', Campaign._parseWallTime)
+#Process name before inserting
+listen(Campaign, 'before_insert', Campaign._stripCampaignName)
+listen(Campaign, 'before_update', Campaign._stripCampaignName)
