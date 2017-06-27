@@ -10,6 +10,7 @@ backfillMode = False
 maxJobs = 10
 maxWallTime = datetime.timedelta(hours=1)
 userName = 'danieltr'
+projectCode = 'NPH103'
 
 with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("localDBFile=\"" + localDBFile+"\"\n")
@@ -20,3 +21,4 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("maxJobs =\"" + str(maxJobs) + "\"\n")
 	envFile.write("maxWallTime =\"" + str(maxWallTime) + "\"\n")
 	envFile.write("userName =\""+userName+"\"\n")
+	envFile.write("projectCode =\""+projectCode+"\"\n")

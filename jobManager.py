@@ -11,7 +11,7 @@ from models.job import Job
 from models.jobFile import File
 from models.campaign import Campaign
 from src.base import Base, session_scope, engine
-from src.queueManager import submitJobs
+from src.queueManager import submitJobs, getJobStatuses
 from src.stringUtilities import parseTimeString
 
 def main():
@@ -24,8 +24,9 @@ def main():
 		print "Submitting jobs"
 		sN,sJ = submitJobs(Session,backfillMode,backfillMode)
 		print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
+		jobsDict = getJobStatuses()
 		for c in Session.query(Campaign).all():
-			sList = c.checkCompletionStatus(Session)
+			sList = c.checkCompletionStatus(Session,jobsDict=jobsDict)
 			print "Campaign "+c.name+" reports "+str(len(sList))+" new successful completions"
 			for j in sList:
 				print str(j.id)+" "+j.name+" successfully completed"

@@ -7,7 +7,7 @@ from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_property
 from src.base import Base
 from job import Job
-from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes, maxWallTime
+from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes, maxWallTime, projectCode
 from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
 
 #A collection of jobs that are compatible to be wrapran.
@@ -99,7 +99,7 @@ class Campaign(Base):
         jobCount = 0
         nodeCount = 0
         for j in self.jobs:
-            if (j.status == "C" and j.checkNodes+nodeCount <= maxNodes and j.checkOutputScript):
+            if (j.status == "C" and j.checkNodes+nodeCount <= maxNodes and j.checkOutputCommand):
                 jobList.append(j)
                 nodeCount += j.checkNodes
                 jobCount += 1
@@ -123,11 +123,12 @@ class Campaign(Base):
         else:
             return 0
 
-    def checkCompletionStatus(self,Session,jobList=[]):
+    def checkCompletionStatus(self,Session,jobList=[],jobsDict={}):
         if (jobList == []):
             jobList = self.jobs
         successList = []
         for j in jobList:
+            #Check if completed happily
             if (j.status == 'Checked' or (j.status == 'C' and j.checkOutputScript is None)):
                 if(j.checkCompletionStatus(Session)):
                     j.status = 'Successful'
@@ -135,6 +136,25 @@ class Campaign(Base):
                 else:
                     j.status = 'Failed'
                     j.numFails += 1
+            #If submitted or running and the pbs job has finished without reporting back, that's bad.
+            elif (j.status in ['Submitted','R']):
+                if (j.pbsID in jobsDict):
+                    if (jobsDict[j.pbsID] in ['C','F','E']):
+                        j.status = 'Failed'
+                        j.numFails += 1
+                else:
+                    j.status = 'Failed'
+                    j.numFailes += 1
+            #Similarly for checking
+            elif (j.status == 'Checking'):
+                if (j.checkPbsID in jobsDict):
+                    if (jobsDict[j.checkPbsID] in ['C','F','E']):
+                        j.status = 'Failed'
+                        j.numFails += 1
+                else:
+                    j.status = 'Failed'
+                    j.numFails += 1
+
         Session.commit()
         return successList
 
@@ -183,7 +203,7 @@ class Campaign(Base):
             wraprun += ' '+j.executionCommand+' : '
         wraprun = wraprun[:-2]
         with open(scriptName,'w') as script:
-            script.write("#PBS -A NPH103\n")
+            script.write("#PBS -A "+projectCode+"\n")
             script.write("#PBS -N "+self.name+"\n")
             if(self.wallTime):
                 script.write("#PBS -l walltime="+str(self.wallTime)+"\n")
@@ -216,15 +236,15 @@ class Campaign(Base):
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
-            if (j.checkOutputScript):
+            if (j.checkOutputCommand):
                 nodes += j.nodes
                 wraprun += '-n '+str(j.nodes)
-                wraprun += ' '+j.checkOutputScript+' : '
+                wraprun += ' '+j.checkOutputCommand+' : '
             else:
                 print "Warning: job " + j.jobName+", "+str(j.id)+" has no check script"
         wraprun = wraprun[:-2]
         with open(scriptName,'w') as script:
-            script.write("#PBS -A NPH103\n")
+            script.write("#PBS -A "+projectCode+"\n")
             script.write("#PBS -N "+self.name+"Check\n")
             if(self.wallTime):
                 script.write("#PBS -l walltime="+str(self.checkWallTime)+"\n")

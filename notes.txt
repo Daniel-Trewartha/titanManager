@@ -1,4 +1,10 @@
 TO ADD:
 
-output check check script
 example run through
+
+write tests for submit xml
+integrate submit xml into main
+test test test test everythiiiing
+so many integration tests
+
+only do one qstat per cycle - then save the output somewhere/somehow and parse it

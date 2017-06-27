@@ -29,12 +29,11 @@ class Job(Base):
     #successful completion of a job marked in two ways
     #existence of output files(if any)
     #running of an output check code
-    #output check code should produce a single file in checkOutLoc, the contents of which are either 'True' or 'False'
-    checkOutputScript = Column('checkOutputScript',String)
+    checkOutputCommand = Column('checkOutputCommand',String)
     checkNodes = Column('checkNodes',Integer,default=1)
     checkWallTime = Column('checkWallTime',Interval,default=datetime.timedelta(hours=1))
     checkPbsID = Column('checkPbsID',Integer)
-    checkOutputLoc = Column('checkOutLoc',String)
+    checkOutputScript = Column('checkOutputScript',String)
 
     #Public methods
 
@@ -57,13 +56,13 @@ class Job(Base):
     def __checkOut(self,Session):
         #check the output file in checkOutLoc
         #if no output file specified, return true
-        if (self.checkOutputLoc is not None):
-            if (os.path.exists(self.checkOutputLoc)):
-                with open(self.checkOutputLoc,'r') as f:
-                    return f.read()
+        if (self.checkOutputScript is not None):
+            checkOut = subprocess.Popen(self.checkOutputScript,stdout=subprocess.PIPE,shell=True)
+            success = pbsSubmit.stdout.read().strip()
+            if (success):
+                return True
             else:
                 return False
-
         else:
             return True
 
