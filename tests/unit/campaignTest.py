@@ -71,7 +71,7 @@ class campaignTest(unittest.TestCase):
 			self.failUnless(testJob4.status == "Ready")
 
 			for f in os.listdir(os.path.split(os.path.abspath(__file__))[0]):
-				if re.search(testCampaign.campaignName+"\.*",f):
+				if re.search(testCampaign.name+"\.*",f):
 					os.remove(f)
 
 	def test_check_job_submission(self):
@@ -103,7 +103,7 @@ class campaignTest(unittest.TestCase):
 			self.failUnless(self.delCheckJob(testJob1))
 
 			for f in os.listdir(os.path.split(os.path.abspath(__file__))[0]):
-				if re.search(testCampaign.campaignName+"\.*",f):
+				if re.search(testCampaign.name+"\.*",f):
 					os.remove(f)
 
 	def test_check_completion_status(self):

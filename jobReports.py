@@ -18,7 +18,7 @@ def jobStatuses():
         print j.id, j.name, j.status, j.campaign.name
     print("Files: ")
     for f in Session.query(File).all():
-        print f.id, f.name, f.job.name, f.job.campaign.name
+        print f.id, os.path.join(f.fileDir,f.name), f.exists(Session), f.job.name, f.job.campaign.name
 
 
 if __name__ == '__main__':
