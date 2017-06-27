@@ -12,6 +12,7 @@ class jobTest(unittest.TestCase):
 	def setUp(self):
 		Base.metadata.create_all(engine)
 		self.fake = Faker()
+		self.dummyCampaign = Campaign(name='TestCampaign')
 
 	def tearDown(self):
 		Base.metadata.drop_all(engine)
@@ -30,7 +31,9 @@ class jobTest(unittest.TestCase):
 
 	def test_check_input_output_file_existence(self):
 		with session_scope(engine) as Session:
-			testJob = Job()
+			Session.add(self.dummyCampaign)
+			Session.commit()
+			testJob = Job(campainID=self.dummyCampaign.id)
 			Session.add(testJob)
 			Session.commit()
 			testFile1 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
@@ -72,8 +75,10 @@ class jobTest(unittest.TestCase):
 
 	def test_check_script_output(self):
 		with session_scope(engine) as Session:
+			Session.add(self.dummyCampaign)
+			Session.commit()
 			outputLoc = os.path.join(os.path.split(os.path.abspath(__file__))[0],self.fake.file_name())
-			testJob = Job(checkOutputLoc=outputLoc)
+			testJob = Job(campaignID=self.dummyCampaign.id,checkOutputLoc=outputLoc)
 			Session.add(testJob)
 			Session.commit()
 

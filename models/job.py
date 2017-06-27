@@ -21,7 +21,7 @@ class Job(Base):
     status = Column('status',String)
     pbsID = Column('pbsID',Integer)
     files = relationship("File", back_populates="job",cascade="all, delete-orphan")
-    campaignID = Column('campaignID',Integer,ForeignKey("campaigns.id"))
+    campaignID = Column('campaignID',Integer,ForeignKey("campaigns.id"),nullable=False)
     campaign = relationship("Campaign", back_populates="jobs")
 
     numFails = Column('numFails',Integer)

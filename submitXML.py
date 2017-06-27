@@ -15,9 +15,13 @@ def postXML(xml):
 		thisCampaign = __createModel(Campaign,c)
 		if (thisCampaign is not None):
 			Session.add(thisCampaign)
-	Session.commit()
+			try:
+				Session.commit()
+			except exc.IntegrityError:
+				Session.rollback()
+				print ("A campaign of name "+thisCampaign.name+" already exists")
 	for j in xml.findall('Job'):
-		thisJob = __createModel(Job,j)
+		thisJob = __createJob(Job,j)
 		if (thisJob is not None):
 			Session.add(thisJob)
 			Session.commit()
@@ -72,6 +76,16 @@ def __createFile(f,ioType,jobID):
 	print("jobID: "+str(jobID))
 	return file
 
+def __createJob(jobObj,j):
+	job = __createModel(jobObj,j)
+	cID = j.findtext('campaign')
+	if (cID):
+		campaign = __findModel(Campaign, cID)
+		if (campaign is not None):
+			job.campaignID = campaign.id
+			print("campaignID: "+str(campaign.id))
+	return job
+
 def __createModel(modelObj,m):
 	attrDict = {}
 	print("Creating a "+modelObj.__name__)
@@ -88,45 +102,47 @@ def __createModel(modelObj,m):
 
 def __updateModel(modelObj,m):
 	modelToUpdate = m.findtext(modelObj.__name__)
-	try:
-		mID = int(modelToUpdate)
-		model = Session.query(Model).get(mID)
-	except ValueError:
-		try:
-			model = Session.query(Model).filter(Model.name.like(modelToUpdate)).one()
-		except ormexc.MultipleResultsFound:
-			print("More than one "+model.__name__+" of that name found. Please specify by ID.")
-			for mod in Session.query(Model).filter(Model.name.like(modelToUpdate)).one():
-				print mod.name, mod.id
-			return None
-	print("Patching "+model.__name__+" "+model.name+" id: "+str(model.id))
-	for attr in model.__table__.columns._data.keys()[1:]:
-		value = c.findtext(attr)
-		if (value is not None):
-			print("Setting "+attr+" to "+value)
-			setattr(model, attr, value)
-	return model
+	model = __findModel(modelObj,modelToUpdate)
+	if (model is not None):
+		print("Patching "+modelObj.__name__+" "+model.name+" id: "+str(model.id))
+		for attr in modelObj.__table__.columns._data.keys()[1:]:
+			value = c.findtext(attr)
+			if (value is not None):
+				print("Setting "+attr+" to "+value)
+				setattr(model, attr, value)
+		return model
+	else:
+		return None
 
 def __deleteModel(modelObj,m):
 	modelToDelete = m.findtext(modelObj.__name__)
+	model = __findModel(modelObj,modelToDelete)
+	if (model is not None):
+		print("Deleting "+modelObj.name+" "+str(model.name)+" id: "+str(model.id))
+		return model
+	else:
+		return None
+
+def __findModel(modelObj,key):
+#Find a model of kind modelObj using a key, which may either be its name or its id
+#Returns none if it cannot local either
 	try:
-		mID = int(modelToDelete)
-		model = Session.query(Model).get(mID)
+		mId = int(key)
+		model = Session.query(modelObj).get(mID)
 	except ValueError:
 		try:
-			model = Session.query(Model).filter(Model.name.like(modelToUpdate)).one()
+			model = Session.query(modelObj).filter(modelObj.name.like(key)).one()
 		except ormexc.MultipleResultsFound:
-			print("More than one "+model.__name__+" of that name found. Please specify by ID.")
-			for mod in Session.query(Model).filter(Model.name.like(modelToUpdate)).one():
-				print mod.name, mod.id
+			print ("More than one "+modelObj.__name__+" of that name found. Please specify by ID.")
+			for m in Session.query(modelObj).filter(modelObj.name.like(key)).one():
+				print m.name, m.id
 			return None
 		except ormexc.NoResultFound:
-			print("No "+model.__name__+" of that name or id found. It may have been cascade deleted already.")
+			print ("No "+modelObj.__name__+" with name "+str(key)+" found.")
 			return None
 	except ormexc.NoResultFound:
-		print("No "+model.__name__+" of that name or id found. It may have been cascade deleted already.")
+		print ("No "+modelObj.__name__+" with id "+str(key)+" found.")
 		return None
-	print("Deleting "+model.name+" "+str(model.id))
 	return model
 
 if __name__ == '__main__':

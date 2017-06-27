@@ -8,17 +8,23 @@ from models.campaign import Campaign
 from models.jobFile import File
 from models.job import Job
 from src.base import Base,session_scope,engine
+from sqlalchemy import exists
 
 class jobFileTest(unittest.TestCase):
 	def setUp(self):
 		Base.metadata.create_all(engine)
 		self.fake = Faker()
+		self.dummyCampaign = Campaign(name='TestCampaign')
 
 	def tearDown(self):
 		Base.metadata.drop_all(engine)
 
 	def insertTestJob(self,Session):
-		testJob = Job()
+		q = Session.query(Campaign).filter(Campaign.name.like(self.dummyCampaign.name)).one()
+		if (not Session.query(q.exists())):
+			Session.add(self.dummyCampaign)
+			Session.commit()
+		testJob = Job(campaignID=self.dummyCampaign.id)
 		Session.add(testJob)
 		Session.commit()
 		return testJob
