@@ -26,9 +26,9 @@ def main():
 		print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
 		for c in Session.query(Campaign).all():
 			sList = c.checkCompletionStatus(Session)
-			print "Campaign "+c.campaignName+" reports "+str(len(sList))+" new successful completions"
+			print "Campaign "+c.name+" reports "+str(len(sList))+" new successful completions"
 			for j in sList:
-				print str(j.id)+" "+j.jobName+" successfully completed"
+				print str(j.id)+" "+j.name+" successfully completed"
 		unfinishedBusiness = False
 		for c in Session.query(Campaign).all():
 			if (c.unfinishedBusiness(Session)):

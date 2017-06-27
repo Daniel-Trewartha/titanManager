@@ -11,9 +11,9 @@ def main():
 
 def jobStatuses():
 	for j in Session.query(Job):
-		print j.id, j.jobName, j.status, j.campaign.campaignName
+		print j.id, j.name, j.status, j.campaign.name
 	for f in Session.query(File):
-		print f.id, f.fileName, f.jobID
+		print f.id, f.name, f.jobID
 
 
 if __name__ == '__main__':

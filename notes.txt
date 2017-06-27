@@ -1,6 +1,4 @@
 TO ADD:
 
-walltime
-swap xName -> name
 output check check script
 example run through

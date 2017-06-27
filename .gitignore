@@ -1,1 +1,4 @@
-.py[cod]
+*.py[cod]
+env/environment.py
+env/*.db
+titanManager/

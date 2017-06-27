@@ -38,13 +38,13 @@ class campaignTest(unittest.TestCase):
 
 	def test_job_submission(self):
 		with session_scope(engine) as Session:
-			testCampaign = Campaign(campaignName='test',header='import wraprun',checkHeader='import wraprun',wallTime=parseTimeString('00:01:00'),checkWallTime=parseTimeString('00:01:00'))
+			testCampaign = Campaign(name=self.fake.job(),header='import wraprun',checkHeader='import wraprun',wallTime=parseTimeString('00:01:00'),checkWallTime=parseTimeString('00:01:00'))
 			Session.add(testCampaign)
 			Session.commit()
-			testJob1 = Job(jobName=self.fake.job(),nodes=1,campaignID=testCampaign.id)
-			testJob2 = Job(jobName=self.fake.job(),nodes=2,campaignID=testCampaign.id)
-			testJob3 = Job(jobName=self.fake.job(),nodes=1,campaignID=testCampaign.id)
-			testJob4 = Job(jobName=self.fake.job(),nodes=1,campaignID=testCampaign.id)
+			testJob1 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
+			testJob2 = Job(name=self.fake.job(),nodes=2,campaignID=testCampaign.id)
+			testJob3 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
+			testJob4 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
 			Session.add(testJob1)
 			Session.add(testJob2)
 			Session.add(testJob3)
@@ -76,12 +76,12 @@ class campaignTest(unittest.TestCase):
 
 	def test_check_job_submission(self):
 		with session_scope(engine) as Session:
-			testCampaign = Campaign(campaignName='test',header='import wraprun',checkHeader='import wraprun',wallTime=parseTimeString('00:01:00'),checkWallTime=parseTimeString('00:01:00'))
+			testCampaign = Campaign(name=self.fake.job(),header='import wraprun',checkHeader='import wraprun',wallTime=parseTimeString('00:01:00'),checkWallTime=parseTimeString('00:01:00'))
 			Session.add(testCampaign)
 			Session.commit()
-			testJob1 = Job(jobName=self.fake.job(),nodes=1,checkOutputScript='pwd',campaignID=testCampaign.id)
-			testJob2 = Job(jobName=self.fake.job(),nodes=1,checkOutputScript='pwd',campaignID=testCampaign.id)
-			testJob3 = Job(jobName=self.fake.job(),nodes=1,campaignID=testCampaign.id)
+			testJob1 = Job(name=self.fake.job(),nodes=1,checkOutputScript='pwd',campaignID=testCampaign.id)
+			testJob2 = Job(name=self.fake.job(),nodes=1,checkOutputScript='pwd',campaignID=testCampaign.id)
+			testJob3 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
 			Session.add(testJob1)
 			Session.add(testJob2)
 			Session.add(testJob3)
@@ -108,17 +108,17 @@ class campaignTest(unittest.TestCase):
 
 	def test_check_completion_status(self):
 		with session_scope(engine) as Session:
-			testCampaign = Campaign(campaignName='test',header='import wraprun',checkHeader='import wraprun',wallTime=parseTimeString('00:01:00'),checkWallTime=parseTimeString('00:01:00'))
+			testCampaign = Campaign(name=self.fake.job(),header='import wraprun',checkHeader='import wraprun',wallTime=parseTimeString('00:01:00'),checkWallTime=parseTimeString('00:01:00'))
 			Session.add(testCampaign)
 			Session.commit()
 			
 			existingDummyFile = os.path.join(os.path.split(os.path.abspath(__file__))[0],self.fake.file_name())
 			notExistingDummyFile = os.path.join(os.path.split(os.path.abspath(__file__))[0],self.fake.file_name())
 			
-			testJob1 = Job(jobName=self.fake.job(),nodes=1,checkOutputScript='pwd',checkOutputLoc=existingDummyFile,campaignID=testCampaign.id)
-			testJob2 = Job(jobName=self.fake.job(),nodes=1,checkOutputScript='pwd',checkOutputLoc=notExistingDummyFile,campaignID=testCampaign.id)
-			testJob3 = Job(jobName=self.fake.job(),nodes=1,campaignID=testCampaign.id)
-			testJob4 = Job(jobName=self.fake.job(),nodes=1,campaignID=testCampaign.id)
+			testJob1 = Job(name=self.fake.job(),nodes=1,checkOutputScript='pwd',checkOutputLoc=existingDummyFile,campaignID=testCampaign.id)
+			testJob2 = Job(name=self.fake.job(),nodes=1,checkOutputScript='pwd',checkOutputLoc=notExistingDummyFile,campaignID=testCampaign.id)
+			testJob3 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
+			testJob4 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
 
 			Session.add(testJob1)
 			Session.add(testJob2)
@@ -127,8 +127,8 @@ class campaignTest(unittest.TestCase):
 			Session.commit()
 
 
-			testFile1 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob3.id, ioType='output')
-			testFile2 = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob4.id, ioType='output')
+			testFile1 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob3.id, ioType='output')
+			testFile2 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob4.id, ioType='output')
 			Session.add(testFile1)
 			Session.add(testFile2)
 

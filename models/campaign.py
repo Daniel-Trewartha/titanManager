@@ -6,7 +6,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
 from src.base import Base
 from job import Job
-from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes
+from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes, maxWallTime
 from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
 
 #A collection of jobs that are compatible to be wrapran.
@@ -156,7 +156,11 @@ class Campaign(Base):
             if(self.wallTime):
                 script.write("#PBS -l walltime="+str(self.wallTime)+"\n")
             else: 
-                script.write("#PBS -l walltime=01:00:00\n")
+                maxWT = parseTimeString("00:00:10")
+                for j in jobList:
+                    if ((j.wallTime is not None) and j.wallTime > maxWT):
+                        maxWT = j.wallTime
+                script.write("#PBS -l walltime="+str(maxWT)+"\n")
             script.write("#PBS -l nodes="+str(nodes)+"\n")
             script.write("#PBS -j oe \n")
 
@@ -194,7 +198,11 @@ class Campaign(Base):
             if(self.wallTime):
                 script.write("#PBS -l walltime="+str(self.checkWallTime)+"\n")
             else: 
-                script.write("#PBS -l walltime=01:00:00\n")
+                maxWT = parseTimeString("00:00:10")
+                for j in jobList:
+                    if ((j.checkWallTime is not None) and j.checkWallTime > maxWT):
+                        maxWT = j.checkWallTime
+                script.write("#PBS -l walltime="+str(maxWT)+"\n")
             script.write("#PBS -l nodes="+str(nodes)+"\n")
             script.write("#PBS -j oe \n")
 

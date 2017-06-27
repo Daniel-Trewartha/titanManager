@@ -26,7 +26,7 @@ class jobFileTest(unittest.TestCase):
 	def test_file_insertion(self):
 		with session_scope(engine) as Session:
 			testJob = self.insertTestJob(Session)
-			testFile = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
+			testFile = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
 			Session.add(testFile)
 			Session.commit()
 			
@@ -46,7 +46,7 @@ class jobFileTest(unittest.TestCase):
 	def test_file_insertion_with_invalid_job(self):
 		with session_scope(engine) as Session:
 			testJob = self.insertTestJob(Session)
-			testFile = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id+1)
+			testFile = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id+1)
 			Session.add(testFile)
 			
 			assertIntegrityError(self,Session)
@@ -54,7 +54,7 @@ class jobFileTest(unittest.TestCase):
 	def test_file_existence(self):
 		with session_scope(engine) as Session:
 			testJob = self.insertTestJob(Session)
-			testFile = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
+			testFile = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
 			Session.add(testFile)
 			Session.commit()
 
@@ -69,7 +69,7 @@ class jobFileTest(unittest.TestCase):
 	def test_file_remove(self):
 		with session_scope(engine) as Session:
 			testJob = self.insertTestJob(Session)
-			testFile = File(fileName=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
+			testFile = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id)
 			Session.add(testFile)
 			Session.commit()
 
