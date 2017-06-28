@@ -26,6 +26,8 @@ def main():
 		sN,sJ = submitJobs(Session,backfillMode,backfillMode)
 		print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
 		jobsDict = getJobStatuses()
+		print "Currently queued jobs: "
+		print jobsDict
 		for c in Session.query(Campaign).all():
 			sList = c.checkCompletionStatus(Session,jobsDict=jobsDict)
 			print "Campaign "+c.name+" reports "+str(len(sList))+" new successful completions"

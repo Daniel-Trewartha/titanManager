@@ -6,9 +6,9 @@ import os
 #and one of the input files from the other job
 data = ET.Element("Data")
 job1 = ET.SubElement(data,"Job")
-ET.SubElement(job1,"name").text = 'testJob1'
+ET.SubElement(job1,"Job").text = 'testJob1'
 file = ET.SubElement(data,"File")
-ET.SubElement(file,"name").text = 'testJob2Executable.data'
+ET.SubElement(file,"File").text = 'testJob2Executable.data'
 
 tree = ET.ElementTree(data)
 tree.write("exampleDeleteXML.xml")
