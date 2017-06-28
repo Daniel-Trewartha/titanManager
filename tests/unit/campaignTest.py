@@ -79,8 +79,8 @@ class campaignTest(unittest.TestCase):
 			testCampaign = Campaign(name=self.fake.job(),header='import wraprun',checkHeader='import wraprun',wallTime=parseTimeString('00:01:00'),checkWallTime=parseTimeString('00:01:00'))
 			Session.add(testCampaign)
 			Session.commit()
-			testJob1 = Job(name=self.fake.job(),nodes=1,checkOutputScript='pwd',campaignID=testCampaign.id)
-			testJob2 = Job(name=self.fake.job(),nodes=1,checkOutputScript='pwd',campaignID=testCampaign.id)
+			testJob1 = Job(name=self.fake.job(),nodes=1,checkOutputCommand='pwd',campaignID=testCampaign.id)
+			testJob2 = Job(name=self.fake.job(),nodes=1,checkOutputCommand='pwd',campaignID=testCampaign.id)
 			testJob3 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
 			Session.add(testJob1)
 			Session.add(testJob2)
@@ -115,8 +115,8 @@ class campaignTest(unittest.TestCase):
 			existingDummyFile = os.path.join(os.path.split(os.path.abspath(__file__))[0],self.fake.file_name())
 			notExistingDummyFile = os.path.join(os.path.split(os.path.abspath(__file__))[0],self.fake.file_name())
 			
-			testJob1 = Job(name=self.fake.job(),nodes=1,checkOutputScript='pwd',checkOutputLoc=existingDummyFile,campaignID=testCampaign.id)
-			testJob2 = Job(name=self.fake.job(),nodes=1,checkOutputScript='pwd',checkOutputLoc=notExistingDummyFile,campaignID=testCampaign.id)
+			testJob1 = Job(name=self.fake.job(),nodes=1,checkOutputScript="if [ -e "+existingDummyFile+" ]; then echo 'True'; fi",checkOutputCommand='pwd',campaignID=testCampaign.id)
+			testJob2 = Job(name=self.fake.job(),nodes=1,checkOutputScript="if [ -e "+notExistingDummyFile+" ]; then echo 'True'; fi",checkOutputCommand='pwd',campaignID=testCampaign.id)
 			testJob3 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
 			testJob4 = Job(name=self.fake.job(),nodes=1,campaignID=testCampaign.id)
 
