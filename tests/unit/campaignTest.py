@@ -140,11 +140,34 @@ class campaignTest(unittest.TestCase):
 
 			#to be marked as 'failed', a job should be marked as run and checked, but either fail its check output script, or have non-existent output files
 			#should be no successful jobs here, output should be empty list
+			#testJob1 has run its check, but has not passed - fail
+			#testJob2 is marked as checking, but there is no corresponding job in the queue - fail
+			#testJob3 is C, has no check script, and its output files do not exist - fail
+			#testJob4 is marked submitted, but no corresponding job in the queue - fail
 			self.failUnless(testCampaign.checkCompletionStatus(Session) == [])
 			self.failUnless(testJob1.status == 'Failed')
-			self.failUnless(testJob2.status == 'Checking')
+			self.failUnless(testJob2.status == 'Failed')
 			self.failUnless(testJob3.status == 'Failed')
-			self.failUnless(testJob4.status == 'Submitted')
+			self.failUnless(testJob4.status == 'Failed')
+
+			#Jobs marked checking and submitted and there's something in the queue running - all good
+			#Jobs marked checking and submitting and there's somthing in the queue finished - oh no
+			testJob1.status = "Checking"
+			testJob2.status = "R"
+			testJob3.status = "Checking"
+			testJob4.status = "Submitted"
+			testJob1.checkPbsID = 1234
+			testJob2.pbsID = 1234
+			testJob3.checkPbsId = 3456
+			testJob4.pbsId = 3456
+			Session.commit()
+			jobsDict = {1234:'R',3456:'C'}
+
+			self.failUnless(testCampaign.checkCompletionStatus(Session,jobsDict=jobsDict) == [])
+			self.failUnless(testJob1.status == 'Checking')
+			self.failUnless(testJob2.status == 'R')
+			self.failUnless(testJob3.status == 'Failed')
+			self.failUnless(testJob4.status == 'Failed')
 
 			dummyFile(existingDummyFile)
 			dummyFile(testFile1.filePath())

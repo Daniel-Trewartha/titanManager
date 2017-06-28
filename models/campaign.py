@@ -144,7 +144,7 @@ class Campaign(Base):
                         j.numFails += 1
                 else:
                     j.status = 'Failed'
-                    j.numFailes += 1
+                    j.numFails += 1
             #Similarly for checking
             elif (j.status == 'Checking'):
                 if (j.checkPbsID in jobsDict):
