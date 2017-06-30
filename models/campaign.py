@@ -146,6 +146,7 @@ class Campaign(Base):
                         j.numFails += 1
                 else:
                     print("Failed due to lost submission")
+                    print("Expecting to find pbsID: "+str(j.pbsID))
                     j.status = 'Failed'
                     j.numFails += 1
             #Similarly for checking
@@ -157,6 +158,7 @@ class Campaign(Base):
                         j.numFails += 1
                 else:
                     print("Failed due to lost check")
+                    print("Expecting to find pbsID: "+str(j.checkPbsID))
                     j.status = 'Failed'
                     j.numFails += 1
 
