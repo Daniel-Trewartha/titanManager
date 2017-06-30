@@ -134,24 +134,29 @@ class Campaign(Base):
                     j.status = 'Successful'
                     successList.append(j)
                 else:
+                    print("Failed due to check failing")
                     j.status = 'Failed'
                     j.numFails += 1
             #If submitted or running and the pbs job has finished without reporting back, that's bad.
             elif (j.status in ['Submitted','R']):
                 if (j.pbsID in jobsDict):
                     if (jobsDict[j.pbsID] in ['C','F','E']):
+                        print("Failed due to submission completing without reporting")
                         j.status = 'Failed'
                         j.numFails += 1
                 else:
+                    print("Failed due to lost submission")
                     j.status = 'Failed'
                     j.numFails += 1
             #Similarly for checking
             elif (j.status == 'Checking'):
                 if (j.checkPbsID in jobsDict):
                     if (jobsDict[j.checkPbsID] in ['C','F','E']):
+                        print("Failed due to check completing without reporting")
                         j.status = 'Failed'
                         j.numFails += 1
                 else:
+                    print("Failed due to lost check")
                     j.status = 'Failed'
                     j.numFails += 1
 
