@@ -17,7 +17,7 @@ class Campaign(Base):
     __name__ = 'campaign'
 
     id = Column(Integer, primary_key=True)
-    name = Column('name',String,unique=True)
+    name = Column('name',String,unique=True,nullable=False)
     jobs = relationship("Job", back_populates="campaign",cascade="all, delete-orphan")
     header = Column('header',String)
     footer = Column('footer',String)

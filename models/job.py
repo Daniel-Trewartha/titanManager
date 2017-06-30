@@ -14,7 +14,7 @@ class Job(Base):
     __name__ = 'job'
         
     id = Column(Integer, primary_key=True)
-    name = Column('name',String,default='default')
+    name = Column('name',String,nullable=False)
     executionCommand = Column('executionCommand',String,default="serial echo 'No Execution Command'")
     nodes = Column('nodes',Integer,default=1)
     wallTime = Column('wallTime',Interval,default=datetime.timedelta(hours=1))
