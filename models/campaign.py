@@ -226,14 +226,18 @@ class Campaign(Base):
             script.write(self.header+"\n")
 
             script.write("source "+virtualEnvPath+"\n")
+            updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
             for j in jobList:
-                script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" R\n")
+                updateString += str(j.id)+" "
+            updateString += "' R\n"
             script.write("deactivate\n")
             script.write(wraprun+"\n")
             script.write(str(self.footer)+"\n")
             script.write("source "+virtualEnvPath+"\n")
+            updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
             for j in jobList:
-                script.write("python "+jobStatusManagerPath+" updateJobStatus "+str(j.id)+" C\n")
+                updateString += str(j.id)+" "
+            updateString += "' R\n"
             script.write("deactivate\n")
         return scriptName
 

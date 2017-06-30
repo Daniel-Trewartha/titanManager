@@ -7,13 +7,12 @@ import src.pbsManager as pbsManager
 from src.base import Base,session_scope,engine
 
 #An externally callable job update routine
-def updateJobStatus(jobID,status,Session):
-    for j in Session.query(Job).all():
-        print j.id
-    thisJob = Session.query(Job).filter(Job.id == jobID).one()
-    thisJob.status = status
+def updateJobStatus(jobIDList,status,Session):
+    for jID in str.split(jobIDList):
+        thisJob = Session.query(Job).filter(Job.id == int(jID)).one()
+        thisJob.status = status
     Session.commit()
-    return "Updated job id "+jobID+" to "+str(status)
+    return jobIDList
 
 #Externally callable job status checker
 def checkJobStatus(jobID,Session):
