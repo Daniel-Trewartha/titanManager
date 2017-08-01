@@ -17,6 +17,7 @@ maxWallTime = datetime.timedelta(hours=23)
 userName = 'danieltr'
 #Project - for building submission scripts
 projectCode = 'NPH103'
+cluster = 'titan'
 
 envVarsPath = os.path.split(os.path.abspath(__file__))[0]
 envName = 'environment.py'
@@ -31,3 +32,4 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("maxWallTime =\"" + str(maxWallTime) + "\"\n")
 	envFile.write("userName =\""+userName+"\"\n")
 	envFile.write("projectCode =\""+projectCode+"\"\n")
+	envFile.write("cluster =\""+cluster+"\"\n")

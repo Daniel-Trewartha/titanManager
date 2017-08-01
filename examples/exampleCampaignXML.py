@@ -2,7 +2,8 @@ import xml.etree.ElementTree as ET
 import os,subprocess
 
 #Create a demonstration 'test' campaign with two jobs
-workDir = "/lustre/atlas/scratch/danieltr/nph103"
+#workDir = "/lustre/atlas/scratch/danieltr/nph103"
+workDir = os.path.split(os.path.abspath(__file__))[0]
 #Mandatory fields for a campaign - name
 data = ET.Element("Data")
 campaign = ET.SubElement(data,"Campaign")

@@ -36,7 +36,7 @@ class campaignTest(unittest.TestCase):
 			return True
 		return False
 
-	def test_job_submission(self):
+	def test_submit_jobs_based_on_status(self):
 		with session_scope(engine) as Session:
 			testCampaign = Campaign(name=self.fake.job(),header='import wraprun',checkHeader='import wraprun',wallTime=parseTimeString('00:01:00'),checkWallTime=parseTimeString('00:01:00'))
 			Session.add(testCampaign)

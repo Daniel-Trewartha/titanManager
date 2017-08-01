@@ -29,7 +29,35 @@ class jobTest(unittest.TestCase):
 			return True
 		return False
 
-	def test_check_input_output_file_existence(self):
+	def test_check_input_file_existence(self):
+		with session_scope(engine) as Session:
+			Session.add(self.dummyCampaign)
+			Session.commit()
+			testJob = Job(campaignID=self.dummyCampaign.id)
+			Session.add(testJob)
+			Session.commit()
+			testFile1 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
+			testFile2 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='input')
+			testFile3 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='input')
+			Session.add(testFile1)
+			Session.add(testFile2)
+			Session.add(testFile3)
+			Session.commit()
+
+			#input files expected but do not exist
+			self.failUnless(not testJob.checkInput(Session))
+
+			#input files expected but only some exist
+			dummyFile(testFile2.filePath())
+			self.failUnless(not testJob.checkInput(Session))
+
+			#input files expected, all exist, but output files do not
+			dummyFile(testFile3.filePath())
+			self.failUnless(testJob.checkInput(Session))
+			os.remove(testFile2.filePath())
+			os.remove(testFile3.filePath())
+
+	def test_check_output_file_existence(self):
 		with session_scope(engine) as Session:
 			Session.add(self.dummyCampaign)
 			Session.commit()
@@ -39,7 +67,6 @@ class jobTest(unittest.TestCase):
 			testFile1 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
 			testFile2 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='output')
 			testFile3 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='input')
-			testFile4 = File(name=self.fake.file_name(),fileDir=os.path.split(os.path.abspath(__file__))[0],jobID=testJob.id, ioType='input')
 			Session.add(testFile1)
 			Session.add(testFile2)
 			Session.add(testFile3)
@@ -58,19 +85,6 @@ class jobTest(unittest.TestCase):
 			self.failUnless(testJob.checkCompletionStatus(Session))
 			os.remove(testFile1.filePath())
 			os.remove(testFile2.filePath())
-
-			#input files expected but do not exist
-			self.failUnless(not testJob.checkInput(Session))
-
-			#input files expected but only some exist
-			dummyFile(testFile3.filePath())
-			self.failUnless(not testJob.checkInput(Session))
-
-			#input files expected, all exist, but output files do not
-			dummyFile(testFile4.filePath())
-			self.failUnless(testJob.checkInput(Session))
-			os.remove(testFile3.filePath())
-			os.remove(testFile4.filePath())
 
 
 	def test_check_script_output(self):

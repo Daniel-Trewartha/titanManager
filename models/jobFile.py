@@ -7,6 +7,7 @@ from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
 from src.base import Base
 from src.stringUtilities import stripWhiteSpace,stripSlash
+from src.env import cluster
 
 class File(Base):
     __tablename__ = 'files'
@@ -17,6 +18,7 @@ class File(Base):
     fileDir = Column('fileDir',String,nullable=False)
     jobID = Column('jobID',Integer,ForeignKey("jobs.id"),nullable=False)
     ioType = Column('ioType',String,default="output")
+    location = Column('location',String,default=cluster)
     job = relationship("Job", back_populates="files")
 
     def filePath(self):
