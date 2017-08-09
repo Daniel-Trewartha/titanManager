@@ -9,6 +9,8 @@ from src.base import Base,session_scope,engine
 from src.stringUtilities import parseTimeString
 from env.environment import virtualEnvPath,jobStatusManagerPath,totalNodes,maxWallTime,maxJobs
 
+def prepareJobs(Session):
+    
 
 def submitJobs(Session,isWallTimeRestricted, isNodeRestricted):
     if(isWallTimeRestricted or isNodeRestricted):

@@ -13,6 +13,10 @@ backfillMode = False
 maxJobs = 50
 #Maximum time any single job should run
 maxWallTime = datetime.timedelta(hours=23)
+#Maximum number of resubmissions before a job is declared failed
+maxJobFails = 5
+#Maximum number of stage-in attempts before a file is declared missing
+maxStageIns = 5
 #username - needed for parsing qstat data
 userName = 'danieltr'
 #Project - for building submission scripts
@@ -30,6 +34,8 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("backfillMode =\"" + str(backfillMode) + "\"\n")
 	envFile.write("maxJobs =\"" + str(maxJobs) + "\"\n")
 	envFile.write("maxWallTime =\"" + str(maxWallTime) + "\"\n")
+	envFile.write("maxJobFails =\"" + str(maxJobFails) + "\"\n")
+	envFile.write("maxStageIns =\"" + str(maxStageIns) + "\"\n")
 	envFile.write("userName =\""+userName+"\"\n")
 	envFile.write("projectCode =\""+projectCode+"\"\n")
 	envFile.write("cluster =\""+cluster+"\"\n")

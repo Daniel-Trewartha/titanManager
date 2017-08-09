@@ -1,13 +1,13 @@
 import datetime, os, sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
-from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, exc, ForeignKey
+from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, Boolean, event, exc, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, mapper
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
 from src.base import Base
 from src.stringUtilities import stripWhiteSpace,stripSlash
-from src.env import cluster
+from env.environment import cluster
 
 class File(Base):
     __tablename__ = 'files'
@@ -19,6 +19,7 @@ class File(Base):
     jobID = Column('jobID',Integer,ForeignKey("jobs.id"),nullable=False)
     ioType = Column('ioType',String,default="output")
     location = Column('location',String,default=cluster)
+    stageInAttempted = Column('stageInAttempted',Boolean,default='false')
     job = relationship("Job", back_populates="files")
 
     def filePath(self):
@@ -30,12 +31,24 @@ class File(Base):
         else:
             return False
 
+    def local(self,Session):
+        #True if file is supposed to exist locally
+        if (self.location == cluster):
+            return True
+        else:
+            return False
+
     def remove(self,Session):
         if self.exists(Session):
             os.remove(self.filePath())
             return True
         else:
             return False
+
+    def stageIn(self,Session):
+        pass
+        #move a file to this location
+        #return true if file now exists in this location
 
     @staticmethod
     def _stripFileNameDir(mapper, connection, target):
@@ -48,3 +61,8 @@ class File(Base):
 #Process filename and dir before inserting
 listen(File, 'before_insert', File._stripFileNameDir)
 listen(File, 'before_update', File._stripFileNameDir)
+
+#Defaults for attributes that should not be settable at initialization
+@event.listens_for(File,"init")
+def init(target, args, kwargs):
+    target.stageInAttempted = False

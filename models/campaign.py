@@ -1,4 +1,4 @@
-import datetime, os, sys, subprocess
+import datetime, os, sys, subprocess, atexit
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
 from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship, mapper, joinedload
@@ -12,6 +12,7 @@ from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
 
 #A collection of jobs that are compatible to be wrapran.
 #It is the responsibility of the user to ensure that jobs have compatible walltimes, node requirements, modules etc.
+
 class Campaign(Base):
     __tablename__ = 'campaigns'
     __name__ = 'campaign'
@@ -34,6 +35,8 @@ class Campaign(Base):
         reportString += str(len(self.jobs))+" total jobs \n"
         reportString += self.__statusCount(Session,"Accepted")+" jobs accepted \n"
         reportString += self.__statusCount(Session,"Missing Input")+" jobs missing input \n"
+        reportString += self.__statusCount(Session,"Staging Required")+" jobs required input to be staged \n"
+        reportString += self.__statusCount(Session,"Staging")+" jobs prestaging input \n"
         reportString += self.__statusCount(Session,"Ready")+" jobs ready for submission \n"
         reportString += self.__statusCount(Session,"Submitted")+" jobs submitted \n"
         reportString += self.__statusCount(Session,"R")+" jobs running \n"
@@ -47,10 +50,50 @@ class Campaign(Base):
 
     def unfinishedBusiness(self,Session):
         #Return true if there are still jobs to be run
-        for unfinishedStatus in ['Accepted','Missing Input','Ready','Submitted','R','C','Checking','Checked','Failed']:
+        for unfinishedStatus in ['Accepted','Missing Input','Staging Required','Staging','Ready','Submitted','R','C','Checking','Checked','Failed']:
             if (not int(self.__statusCount(Session,unfinishedStatus)) == int(0)):
                 return True
         return False
+
+    def stageIn(self,Session):
+        #Find out which jobs have files that require staging
+        #Them launch the staging-in process
+        #Return true if stager is launched or on-going
+        #Return False if no stager is required
+
+        #Find out what's going on with previous stager, if it exists
+        #If it exists and is still running, don't launch another
+        #If it exists and has finished, check to see that files were successfully staged, and launch another if necessary
+        #If it doesn't exist, launch it
+
+        #Do we have a currently running stager?
+        if (self.__checkStager(Session)):
+            return True
+
+        #Which jobs have files that require staging?
+        self.__checkInput(Session)
+
+        #Create a list of all files that require staging
+        stageInList = []
+        for j in self.jobs:
+            if (j.status == "Staging Required"):
+                stageInList.append(j.listStageInFiles)
+                j.status = "Staging"
+            #If we previously launched a stager that has now terminated, jobs still marked "Staging" have failed to stage in all files, so try again
+            if (self.stagerProcess and j.status == "Staging"):
+                stageInList.append(j.listStageInFiles)
+                j.status = "Staging"
+        Session.commit()
+        #If nothing requires staging, we should return False
+        if (stageInList == []):
+            return False
+        #Otherwise, launch a stager
+        #Construct a bash script that runs the stager
+        stagerScriptLoc = self.__createStagingScript(Session,stageInList)
+        #run the script
+        cmd = "bash "+stagerScriptLoc
+        self.stagerProcess = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
+        return True
 
     def submitJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
         #submit a bundle of up to maxJobs jobs that occupy fewer than maxNodes nodes
@@ -123,7 +166,7 @@ class Campaign(Base):
         else:
             return 0
 
-    def checkCompletionStatus(self,Session,jobList=[],jobsDict={}):
+    def checkCompletionStatus(self,Session,jobList=[],currentlySubmittedJobsDict={}):
         if (jobList == []):
             jobList = self.jobs
         successList = []
@@ -139,7 +182,7 @@ class Campaign(Base):
                     j.numFails += 1
             #If submitted or running and the pbs job has finished without reporting back, that's bad.
             elif (j.status in ['Submitted','R']):
-                if (str(j.pbsID) in jobsDict):
+                if (str(j.pbsID) in currentlySubmittedJobsDict):
                     if (jobsDict[str(j.pbsID)] in ['C','F','E']):
                         print("Failed due to submission completing without reporting")
                         j.status = 'Failed'
@@ -151,7 +194,7 @@ class Campaign(Base):
                     j.numFails += 1
             #Similarly for checking
             elif (j.status == 'Checking'):
-                if (str(j.checkPbsID) in jobsDict):
+                if (str(j.checkPbsID) in currentlySubmittedJobsDict):
                     if (jobsDict[str(j.checkPbsID)] in ['C','F','E']):
                         print("Failed due to check completing without reporting")
                         j.status = 'Failed'
@@ -198,6 +241,21 @@ class Campaign(Base):
         self._checkWallTime = checkWallTime
 
     ## Private Methods
+
+    def __checkStager(self,Session):
+        #Return true if this campaign has an active stager
+        #False otherwise
+        if (not self.stagerProcess):
+            return False
+        else:
+            rC = self.stagerProcess.poll()
+            if (rC):
+                return True
+            else:
+                return False
+
+    def __createStagingScript(self,Session,stageInList):
+        return "To Implement"
 
     def __createSubmissionScript(self, Session, jobList):
         #construct a job submission script from a list of jobs
@@ -286,19 +344,26 @@ class Campaign(Base):
         if(jobList == []):
             jobList = self.jobs
         for j in jobList:
-            if (j.status == "Accepted" or j.status == "Failed" or j.status == "Missing Input"):
-                if (j.checkInput(Session)):
-                    if (j.numFails < 5):
-                        j.status =  "Ready"
-                    else:
-                        j.status = "Requires Attention"
+            if (j.status in ["Accepted", "Failed", "Missing Input", "Staging", "Staging Required"]):
+                status = j.checkInput(Session)
+                if (status in ["Staging", "Missing Input"]):
+                    j.status = status
+                elif (status == "Ready" and j.numFails < 5):
+                    j.status =  "Ready"
                 else:
-                    j.status = "Missing Input"
+                    j.status = "Requires Attention"
         Session.commit()
 
     def __statusCount(self,Session,status):
         #Return the number of jobs with status status in this campaign
         return str(Session.query(Job).filter(Job.campaignID == self.id).filter(Job.status == status).count())
+
+    def __killStager(self):
+        #Ensure a stager is killed if the main program exits
+        if (self.stagerProcess):
+            self.stagerProcess.kill()
+
+    atexit.register(self.__killstager)
 
     @staticmethod
     def _parseWallTime(mapper, connection, target):

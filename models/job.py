@@ -6,12 +6,15 @@ from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
 from src.base import Base
-from env.environment import virtualEnvPath, jobStatusManagerPath
+from env.environment import virtualEnvPath, jobStatusManagerPath, cluster
 from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
+
 
 class Job(Base):
     __tablename__ = 'jobs'
     __name__ = 'job'
+    #A list of allowable statuses for jobs
+    __statuses__ = ['Accepted','Missing Input','Staging Required', 'Staging','Ready','Submitted','R','C','Checking','Checked','Failed','Successful','Requires Attention']
         
     id = Column(Integer, primary_key=True)
     name = Column('name',String,nullable=False)
@@ -46,10 +49,27 @@ class Job(Base):
 
     def checkInput(self,Session):
         #check for input file existence
+        #"Ready" if all input files exist
+        #"Staging" if files exist externally
+        #"Missing Input" if files do not exist
+        #Missing input should be highest priority
+        stagingRequired = False
         for iF in [iF for iF in self.files if iF.ioType == 'input']:
-            if (not iF.exists(Session)):
-                return False
-        return True
+            if (not iF.local(Session)):
+                stagingRequired = True
+            elif (not iF.exists(Session)):
+                return "Missing Input"
+        if (stagingRequired):
+            return "Staging Required"
+        else:
+            return "Ready"
+
+    def listStageInFiles(self,Session):
+        #Return a list of files attached to this job that require staging in
+        stageInList = []
+        for iF in [iF for iF in self.files if (iF.ioType == 'input' and iF.local(Session))]:
+            stageInList.append((iF,iF.stageIn(Session)))
+        return stageInList
 
     #Private methods
 
@@ -85,6 +105,11 @@ class Job(Base):
             target.wallTime = parseTimeString(str(target.wallTime))
         if (target.checkWallTime is not None):
             target.checkWallTime = parseTimeString(str(target.checkWallTime))
+
+    @staticmethod
+    def _noRogueStatuses(mapper, connection, target):
+        if (not target.status in target.__statuses__):
+            raise ValueError('Attempting to set job status to an unallowable status: '+target.status)
 #EVENT LISTENERS
 
 #Defaults for attributes that should not be settable at initialization
@@ -101,3 +126,5 @@ listen(Job, 'before_update', Job._stripJobName)
 #Process walltime and checkwalltime
 listen(Job, 'before_insert', Job._parseWallTime)
 listen(Job, 'before_update', Job._parseWallTime)
+#Only valid statuses
+listen(Job, 'before_update', Job._noRogueStatuses)
