@@ -6,6 +6,8 @@ localDBFile = os.path.split(os.path.abspath(__file__))[0]+"/manager.db"
 virtualEnvPath = os.path.join('/ccs/home/danieltr/titanManager',"titanManager","bin","activate")
 #The executable that updates job statuses
 jobStatusManagerPath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..','jobStatusManager.py'))
+#The executable that stages in files
+fileStagerPath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..','fileStager.py'))
 #Total nodes available
 totalNodes = "18649"
 backfillMode = False
@@ -22,6 +24,8 @@ userName = 'danieltr'
 #Project - for building submission scripts
 projectCode = 'NPH103'
 cluster = 'titan'
+#Directory that staged in input should go to
+inputDir = os.path.split(os.path.abspath(__file__))[0]
 
 envVarsPath = os.path.split(os.path.abspath(__file__))[0]
 envName = 'environment.py'
@@ -39,3 +43,5 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("userName =\""+userName+"\"\n")
 	envFile.write("projectCode =\""+projectCode+"\"\n")
 	envFile.write("cluster =\""+cluster+"\"\n")
+	envFile.write("fileStagerPath = \""+fileStagerPath+"\"\n")
+	envFile.write("inputDir = \""+inputDir+"\"\n")

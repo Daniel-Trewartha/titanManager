@@ -16,6 +16,8 @@ maxStageIns = 1
 userName = 'danieltr'
 projectCode = 'NPH103'
 cluster = 'titan'
+inputDir = os.path.split(os.path.abspath(__file__))[0]
+fileStagerPath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..','fileStager.py'))
 
 with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("localDBFile=\"" + localDBFile+"\"\n")
@@ -30,3 +32,5 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("userName =\""+userName+"\"\n")
 	envFile.write("projectCode =\""+projectCode+"\"\n")
 	envFile.write("cluster =\""+cluster+"\"\n")
+	envFile.write("fileStagerPath = \""+fileStagerPath+"\"\n")
+	envFile.write("inputDir = \""+inputDir+"\"\n")

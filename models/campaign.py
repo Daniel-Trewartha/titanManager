@@ -7,7 +7,7 @@ from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_property
 from src.base import Base
 from job import Job
-from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes, maxWallTime, projectCode
+from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes, maxWallTime, projectCode, fileStagerPath
 from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
 
 #A collection of jobs that are compatible to be wrapran.
@@ -255,7 +255,16 @@ class Campaign(Base):
                 return False
 
     def __createStagingScript(self,Session,stageInList):
-        return "To Implement"
+        scriptName = self.name+"Stager.bash"
+        with open(scriptName,'w') as script:
+            script.write("source "+virtualEnvPath+"\n")
+            updateString = "python "+fileStagerPath+" '"
+            for f in stageInList:
+                updateString += str(f.id)
+            updateString += "' \n"
+            script.write(updateString)
+            script.write("deactivate\n")
+        return scriptName
 
     def __createSubmissionScript(self, Session, jobList):
         #construct a job submission script from a list of jobs

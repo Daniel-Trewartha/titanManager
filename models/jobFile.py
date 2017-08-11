@@ -19,7 +19,8 @@ class File(Base):
     jobID = Column('jobID',Integer,ForeignKey("jobs.id"),nullable=False)
     ioType = Column('ioType',String,default="output")
     location = Column('location',String,default=cluster)
-    stageInAttempted = Column('stageInAttempted',Boolean,default='false')
+    stageInAttempts = Column('stageInAttempts',Integer,default=0)
+    retainLocalCopy = Column('retainLocalCopy',Boolean,default=True)
     job = relationship("Job", back_populates="files")
 
     def filePath(self):
@@ -45,9 +46,10 @@ class File(Base):
         else:
             return False
 
-    def stageIn(self,Session):
+    def stageIn(self,Session,dir):
         pass
         #move a file to this location
+        #In directory dir
         #return true if file now exists in this location
 
     @staticmethod
@@ -65,4 +67,4 @@ listen(File, 'before_update', File._stripFileNameDir)
 #Defaults for attributes that should not be settable at initialization
 @event.listens_for(File,"init")
 def init(target, args, kwargs):
-    target.stageInAttempted = False
+    target.stageInAttempts = 0
