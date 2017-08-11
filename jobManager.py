@@ -22,6 +22,9 @@ def main():
 		print "Campaign Status Report"
 		for c in Session.query(Campaign).all():
 			print c.statusReport(Session)
+		print "Checking for required staging"
+		for c in Session.query(Campaign).all():
+			c.stageIn(Session)
 		print "Submitting jobs"
 		sN,sJ = submitJobs(Session,backfillMode,backfillMode)
 		print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
@@ -29,7 +32,7 @@ def main():
 		print "Currently queued jobs: "
 		print jobsDict
 		for c in Session.query(Campaign).all():
-			sList = c.checkCompletionStatus(Session,jobsDict=jobsDict)
+			sList = c.checkCompletionStatus(Session,jobList=jobsDict)
 			print "Campaign "+c.name+" reports "+str(len(sList))+" new successful completions"
 			for j in sList:
 				print str(j.id)+" "+j.name+" successfully completed"

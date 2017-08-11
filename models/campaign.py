@@ -27,6 +27,9 @@ class Campaign(Base):
     _wallTime = Column('wallTime',Interval)
     _checkWallTime = Column('checkWallTime',Interval)
 
+    def __init__(self):
+        atexit.register(self.__killstager)
+
     #Public Methods
     def statusReport(self,Session):
         #Produce a report on the status of jobs in this campaign
@@ -80,7 +83,7 @@ class Campaign(Base):
                 stageInList.append(j.listStageInFiles)
                 j.status = "Staging"
             #If we previously launched a stager that has now terminated, jobs still marked "Staging" have failed to stage in all files, so try again
-            if (self.stagerProcess and j.status == "Staging"):
+            if (hasattr(self,'stagerProcess') and j.status == "Staging"):
                 stageInList.append(j.listStageInFiles)
                 j.status = "Staging"
         Session.commit()
@@ -245,7 +248,7 @@ class Campaign(Base):
     def __checkStager(self,Session):
         #Return true if this campaign has an active stager
         #False otherwise
-        if (not self.stagerProcess):
+        if (not hasattr(self,'stagerProcess')):
             return False
         else:
             rC = self.stagerProcess.poll()
@@ -371,8 +374,6 @@ class Campaign(Base):
         #Ensure a stager is killed if the main program exits
         if (self.stagerProcess):
             self.stagerProcess.kill()
-
-    atexit.register(self.__killstager)
 
     @staticmethod
     def _parseWallTime(mapper, connection, target):

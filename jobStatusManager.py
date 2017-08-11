@@ -9,14 +9,14 @@ from src.base import Base,session_scope,engine
 #An externally callable job update routine
 def updateJobStatus(jobIDList,status,Session):
     for jID in str.split(jobIDList):
-        thisJob = Session.query(Job).filter(Job.id == int(jID)).one()
+        thisJob = Session.query(Job).get(int(jID))
         thisJob.status = status
     Session.commit()
     return jobIDList
 
 #Externally callable job status checker
 def checkJobStatus(jobID,Session):
-    thisJob = Session.query(Job).filter(Job.id == jobID).one()
+    thisJob = Session.query(Job).get(int(jobID))
     complete = thisJob.checkCompletionStatus(Session)
     return "Job complete: "+str(complete)
 

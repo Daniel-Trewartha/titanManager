@@ -9,7 +9,7 @@ from env.environment import cluster,inputDir
 #Given a list of files, launch the stage-in process for each
 def stager(fileList,Session):
 	for f in fileList:
-		thisFile = Session.query(File).get(f)
+		thisFile = Session.query(File).get(int(f))
 		if (thisFile):
 			if (thisFile.stageInAttempts < maxStageIns):
 				thisFile.stageInAttempts += 1
