@@ -23,9 +23,12 @@ maxStageIns = 5
 userName = 'danieltr'
 #Project - for building submission scripts
 projectCode = 'NPH103'
+#Globus endpoint for current cluster
 cluster = 'titan'
 #Directory that staged in input should go to
 inputDir = os.path.split(os.path.abspath(__file__))[0]
+#File that globus auth tokens should be stored in
+globusRefreshTokens = os.path.join(os.path.split(os.path.abspath(__file__))[0],"refresh-tokens.json")
 
 envVarsPath = os.path.split(os.path.abspath(__file__))[0]
 envName = 'environment.py'
@@ -45,3 +48,4 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("cluster =\""+cluster+"\"\n")
 	envFile.write("fileStagerPath = \""+fileStagerPath+"\"\n")
 	envFile.write("inputDir = \""+inputDir+"\"\n")
+	envFile.write("globusRefreshTokens =\""+globusRefreshTokens+"\"\n")

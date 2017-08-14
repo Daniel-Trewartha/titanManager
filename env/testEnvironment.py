@@ -18,6 +18,7 @@ projectCode = 'NPH103'
 cluster = 'titan'
 inputDir = os.path.split(os.path.abspath(__file__))[0]
 fileStagerPath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..','fileStager.py'))
+globusRefreshTokens = os.path.join(os.path.split(os.path.abspath(__file__))[0],"refresh-tokens.json")
 
 with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("localDBFile=\"" + localDBFile+"\"\n")
@@ -34,3 +35,4 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("cluster =\""+cluster+"\"\n")
 	envFile.write("fileStagerPath = \""+fileStagerPath+"\"\n")
 	envFile.write("inputDir = \""+inputDir+"\"\n")
+	envFile.write("globusRefreshTokens =\""+globusRefreshTokens+"\"\n")
