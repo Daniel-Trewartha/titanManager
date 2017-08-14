@@ -88,10 +88,10 @@ def establish_transfer_client():
 
     return transfer	
 
-def transfer_file(fileName,destination,origin):
+def transfer_file(fileName,destinationPath,destinationLocation,originPath,originLocation):
 	transferClient = establish_transfer_client()
 	try:
-        transfer.endpoint_autoactivate(TUTORIAL_ENDPOINT_ID)
+        transfer.endpoint_autoactivate(originLocation)
     except GlobusAPIError as ex:
         print(ex)
         if ex.http_status == 401:
@@ -99,3 +99,9 @@ def transfer_file(fileName,destination,origin):
                      'Please delete refresh-tokens.json and try again.')
         else:
             raise ex
+
+    transferData = globus_sdk.TransferData(transferClient, originLocation,
+                                 destinationLocation,
+                                 sync_level="checksum")
+    transferData.add_item(os.path.join(originPath,filename),os.path.join(destinationPath,filename))
+    transferClient.submit_transfer(transferData)
