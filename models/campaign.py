@@ -29,7 +29,7 @@ class Campaign(Base):
 
     @orm.reconstructor
     def init_on_load(self):
-        atexit.register(self.__killstager)
+        atexit.register(self.__killstager())
 
     #Public Methods
     def statusReport(self,Session):
