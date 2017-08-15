@@ -11,12 +11,16 @@ from models.job import Job
 from models.jobFile import File
 from models.campaign import Campaign
 from src.base import Base, session_scope, engine
-from src.queueManager import submitJobs
+from src.campaignManager import submitJobs
 from src.pbsUtilities import getJobStatuses
 from src.stringUtilities import parseTimeString
 
 def main():
 
+	if (backfillMode == "False"):
+		bfM = False
+	else:
+		bfM = True
 	unfinishedBusiness = True
 	while unfinishedBusiness:
 		print "Campaign Status Report"
@@ -26,13 +30,13 @@ def main():
 		for c in Session.query(Campaign).all():
 			c.stageIn(Session)
 		print "Submitting jobs"
-		sN,sJ = submitJobs(Session,backfillMode,backfillMode)
+		sN,sJ = submitJobs(Session,bfM,bfM)
 		print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
 		jobsDict = getJobStatuses()
 		print "Currently queued jobs: "
 		print jobsDict
 		for c in Session.query(Campaign).all():
-			sList = c.checkCompletionStatus(Session,jobList=jobsDict)
+			sList = c.checkCompletionStatus(Session,currentlySubmittedJobsDict=jobsDict)
 			print "Campaign "+c.name+" reports "+str(len(sList))+" new successful completions"
 			for j in sList:
 				print str(j.id)+" "+j.name+" successfully completed"

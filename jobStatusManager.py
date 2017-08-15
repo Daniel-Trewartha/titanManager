@@ -3,7 +3,6 @@ from datetime import timedelta
 from models.campaign import Campaign
 from models.job import Job
 from models.jobFile import File
-import src.pbsManager as pbsManager
 from src.base import Base,session_scope,engine
 
 #An externally callable job update routine

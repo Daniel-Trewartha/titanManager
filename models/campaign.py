@@ -29,7 +29,7 @@ class Campaign(Base):
 
     @orm.reconstructor
     def init_on_load(self):
-        atexit.register(self.__killstager())
+        atexit.register(self.__killStager)
 
     #Public Methods
     def statusReport(self,Session):
@@ -111,7 +111,9 @@ class Campaign(Base):
         jobCount = 0
         nodeCount = 0
         for j in self.jobs:
+            print j.name, j.nodes+nodeCount, maxNodes, totalNodes
             if (j.status == "Ready" and j.nodes+nodeCount <= maxNodes):
+                print "Ready"
                 jobList.append(j)
                 nodeCount += j.nodes
                 jobCount += 1
@@ -187,7 +189,7 @@ class Campaign(Base):
             #If submitted or running and the pbs job has finished without reporting back, that's bad.
             elif (j.status in ['Submitted','R']):
                 if (str(j.pbsID) in currentlySubmittedJobsDict):
-                    if (jobsDict[str(j.pbsID)] in ['C','F','E']):
+                    if (currentlySubmittedJobsDict[str(j.pbsID)] in ['C','F','E']):
                         print("Failed due to submission completing without reporting")
                         j.status = 'Failed'
                         j.numFails += 1
@@ -199,7 +201,7 @@ class Campaign(Base):
             #Similarly for checking
             elif (j.status == 'Checking'):
                 if (str(j.checkPbsID) in currentlySubmittedJobsDict):
-                    if (jobsDict[str(j.checkPbsID)] in ['C','F','E']):
+                    if (currentlySubmittedJobsDict[str(j.checkPbsID)] in ['C','F','E']):
                         print("Failed due to check completing without reporting")
                         j.status = 'Failed'
                         j.numFails += 1
@@ -373,7 +375,7 @@ class Campaign(Base):
 
     def __killStager(self):
         #Ensure a stager is killed if the main program exits
-        if (self.stagerProcess):
+        if (hasattr(self,"stagerProcess")):
             self.stagerProcess.kill()
 
     @staticmethod
