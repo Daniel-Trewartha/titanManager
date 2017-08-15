@@ -1,6 +1,6 @@
 import datetime, os, sys, subprocess, atexit
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
-from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Interval, DateTime, JSON, event, ForeignKey, UniqueConstraint, orm
 from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
@@ -27,7 +27,8 @@ class Campaign(Base):
     _wallTime = Column('wallTime',Interval)
     _checkWallTime = Column('checkWallTime',Interval)
 
-    def __init__(self):
+    @orm.reconstructor
+    def init_on_load(self):
         atexit.register(self.__killstager)
 
     #Public Methods
