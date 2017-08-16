@@ -6,8 +6,7 @@ import sys
 import webbrowser
 from env.environment import globusRefreshTokens
 
-from globus_sdk import (NativeAppAuthClient, TransferClient,
-                        RefreshTokenAuthorizer)
+from globus_sdk import NativeAppAuthClient, TransferClient, RefreshTokenAuthorizer
 from globus_sdk.exc import GlobusAPIError
 
 CLIENT_ID = "3fedb375-4458-42d7-b17c-7f5d4be1ceac"

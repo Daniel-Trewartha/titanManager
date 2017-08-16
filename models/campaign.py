@@ -359,7 +359,7 @@ class Campaign(Base):
         for j in jobList:
             if (j.status in ["Accepted", "Failed", "Missing Input", "Staging", "Staging Required"]):
                 status = j.checkInput(Session)
-                if (status in ["Staging", "Missing Input"]):
+                if (status in ["Staging Required", "Missing Input"]):
                     j.status = status
                 elif (status == "Ready" and j.numFails < 5):
                     j.status =  "Ready"

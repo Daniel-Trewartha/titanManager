@@ -55,7 +55,6 @@ class Job(Base):
         #Missing input should be highest priority
         stagingRequired = False
         for iF in [iF for iF in self.files if iF.ioType == 'input']:
-            print "Checking, ",iF.name,iF.local(Session),iF.exists(Session)
             if (not iF.local(Session)):
                 stagingRequired = True
             elif (not iF.exists(Session)):
