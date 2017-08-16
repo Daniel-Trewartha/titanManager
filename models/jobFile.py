@@ -48,7 +48,7 @@ class File(Base):
             return False
 
     def stageIn(self,Session,direc):
-        transfer_file(self.fileName,direc,cluster,self.fileDir,location)
+        transfer_file(self.name,direc,cluster,self.fileDir,self.location)
 
     @staticmethod
     def _stripFileNameDir(mapper, connection, target):

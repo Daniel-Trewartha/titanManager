@@ -67,8 +67,9 @@ class Job(Base):
     def listStageInFiles(self,Session):
         #Return a list of files attached to this job that require staging in
         stageInList = []
-        for iF in [iF for iF in self.files if (iF.ioType == 'input' and iF.local(Session))]:
-            stageInList.append((iF,iF.stageIn(Session)))
+        for iF in [iF for iF in self.files if (iF.ioType == 'input' and not iF.local(Session))]:
+            print iF
+            stageInList.append(iF)
         return stageInList
 
     #Private methods

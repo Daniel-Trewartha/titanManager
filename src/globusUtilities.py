@@ -9,30 +9,29 @@ from env.environment import globusRefreshTokens
 from globus_sdk import NativeAppAuthClient, TransferClient, RefreshTokenAuthorizer
 from globus_sdk.exc import GlobusAPIError
 
-CLIENT_ID = "3fedb375-4458-42d7-b17c-7f5d4be1ceac"
-SCOPE = ('urn:globus:auth:scope:transfer.api.globus.org:all')
+clientID = "3fedb375-4458-42d7-b17c-7f5d4be1ceac"
+scope = ('urn:globus:auth:scope:transfer.api.globus.org:all')
 
-def load_tokens_from_file(filepath):
+def loadTokensFromFile(filepath):
     """Load a set of saved tokens."""
     with open(filepath, 'r') as f:
         tokens = json.load(f)
 
     return tokens
 
-def save_tokens_to_file(filepath, tokens):
+def saveTokensToFile(filepath, tokens):
     """Save a set of tokens for later use."""
     with open(filepath, 'w') as f:
         json.dump(tokens, f)
 
-def update_tokens_file_on_refresh(token_response):
+def updateTokensFileOnRefresh(token_response):
     """
     Authorizer requires a refresh function that has only tokens as input.
     So wrap the save file function.
     """
-    save_tokens_to_file(TOKEN_FILE, token_response.by_resource_server)
+    saveTokensToFile(globusRefreshTokens, token_response.by_resource_server)
 
-def do_native_app_authentication(client_id, redirect_uri,
-                                 requested_scopes=None):
+def doNativeAppAuthentication(client_id,requested_scopes=None):
     """
     Does a Native App authentication flow and returns a
     dict of tokens keyed by service name.
@@ -47,46 +46,46 @@ def do_native_app_authentication(client_id, redirect_uri,
 
     print('Please visit the url at \n{}'.format(url))
 
-    auth_code = get_input('Enter the auth code provided: ').strip()
+    auth_code = input('Enter the auth code provided: ').strip()
 
     token_response = client.oauth2_exchange_code_for_tokens(auth_code)
 
     # return a set of tokens, organized by resource server name
     return token_response.by_resource_server
 
-def establish_transfer_client():
+def establishTransferClient():
     #Establish access tokens, set up authorizer and transfer clients
     tokens = None
     try:
-        tokens = load_tokens_from_file(globusRefreshTokens)
+        tokens = loadTokensFromFile(globusRefreshTokens)
     except:
         pass
 
     if not tokens:
-        tokens = do_native_app_authentication(CLIENT_ID, REDIRECT_URI, SCOPES)
+        tokens = doNativeAppAuthentication(clientID, scope)
         try:
-            save_tokens_to_file(globusRefreshTokens, tokens)
+            saveTokensToFile(globusRefreshTokens, tokens)
         except:
             print("Unable to connect to globus. Remote files will not be transferred.")
             raise GlobusAPIError
 
     transferTokens = tokens['transfer.api.globus.org']
 
-    auth_client = NativeAppAuthClient(client_id=CLIENT_ID)
+    auth_client = NativeAppAuthClient(client_id=clientID)
 
     authorizer = RefreshTokenAuthorizer(
         transferTokens['refresh_token'],
         auth_client,
         access_token=transferTokens['access_token'],
         expires_at=transferTokens['expires_at_seconds'],
-        on_refresh=update_tokens_file_on_refresh)
+        on_refresh=updateTokensFileOnRefresh)
 
     transfer = TransferClient(authorizer=authorizer)
 
     return transfer 
 
 def transfer_file(fileName,destinationPath,destinationLocation,originPath,originLocation):
-    transferClient = establish_transfer_client()
+    transferClient = establishTransferClient()
     try:
         transfer.endpoint_autoactivate(originLocation)
     except GlobusAPIError as ex:

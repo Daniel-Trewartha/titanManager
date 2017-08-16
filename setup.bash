@@ -8,3 +8,4 @@ source titanManager/bin/activate
 pip install -r requirements.txt
 #pip standard repos do not find faker for some reason
 easy_install faker
+easy_install globus_sdk

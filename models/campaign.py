@@ -81,11 +81,11 @@ class Campaign(Base):
         stageInList = []
         for j in self.jobs:
             if (j.status == "Staging Required"):
-                stageInList.append(j.listStageInFiles)
+                stageInList += j.listStageInFiles(Session)
                 j.status = "Staging"
             #If we previously launched a stager that has now terminated, jobs still marked "Staging" have failed to stage in all files, so try again
             if (hasattr(self,'stagerProcess') and j.status == "Staging"):
-                stageInList.append(j.listStageInFiles)
+                stageInList += j.listStageInFiles(Session)
                 j.status = "Staging"
         Session.commit()
         #If nothing requires staging, we should return False

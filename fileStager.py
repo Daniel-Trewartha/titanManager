@@ -2,9 +2,12 @@
 #It will take a list of file ids in
 #Then try to stage them
 
+import sys
 from models.jobFile import File
+from models.job import Job
+from models.campaign import Campaign
 from src.base import Base,session_scope,engine
-from env.environment import cluster,inputDir
+from env.environment import cluster,inputDir,maxStageIns
 
 #Given a list of files, launch the stage-in process for each
 def stager(fileList,Session):
