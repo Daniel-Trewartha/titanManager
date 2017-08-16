@@ -9,14 +9,11 @@ from src.base import Base,session_scope,engine
 from src.stringUtilities import parseTimeString
 from env.environment import virtualEnvPath,jobStatusManagerPath,totalNodes,maxWallTime,maxJobs
 
-def prepareJobs(Session):
-    
-
 def submitJobs(Session,isWallTimeRestricted, isNodeRestricted):
     if(isWallTimeRestricted or isNodeRestricted):
         nodes, wallTime = pbsUtilities.getFreeResources()
     if (not isNodeRestricted):
-        nodes = totalNodes
+        nodes = int(totalNodes)
     if (not isWallTimeRestricted):
         wallTime = maxWallTime
     availableJobs = int(maxJobs) - pbsUtilities.getQueuedJobs()

@@ -12,7 +12,7 @@ def main():
 def jobStatuses():
     print("Campaigns: ")
     for c in Session.query(Campaign).all():
-        print c.id, c.name
+        print c.id, c.name, c.header
     print("Jobs: ")
     for j in Session.query(Job).all():
         print j.id, j.name, j.status, j.campaign.name
