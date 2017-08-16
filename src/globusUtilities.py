@@ -53,7 +53,7 @@ def doNativeAppAuthentication(client_id,requested_scopes=None):
     # return a set of tokens, organized by resource server name
     return token_response.by_resource_server
 
-def establishTransferClient():
+def acquireRefreshTokens():
     #Establish access tokens, set up authorizer and transfer clients
     tokens = None
     try:
@@ -66,8 +66,17 @@ def establishTransferClient():
         try:
             saveTokensToFile(globusRefreshTokens, tokens)
         except:
-            print("Unable to connect to globus. Remote files will not be transferred.")
-            raise GlobusAPIError
+            print("Unable to acquire globus tokens. Remote files will not be transferred.")
+
+def establishTransferClient():
+    #Establish access tokens, set up authorizer and transfer clients
+    tokens = None
+    try:
+        tokens = loadTokensFromFile(globusRefreshTokens)
+    except:
+        print("Unable to connect to globus. Remote files will not be transferred.")
+        raise GlobusAPIError
+
 
     transferTokens = tokens['transfer.api.globus.org']
 

@@ -14,6 +14,7 @@ from src.base import Base, session_scope, engine
 from src.campaignManager import submitJobs
 from src.pbsUtilities import getJobStatuses
 from src.stringUtilities import parseTimeString
+from src.globusUtilities import acquireRefreshTokens
 
 def main():
 
@@ -21,6 +22,8 @@ def main():
 		bfM = False
 	else:
 		bfM = True
+	#Acquire globus tokens, if we don't already have them
+	acquireRefreshTokens()
 	unfinishedBusiness = True
 	while unfinishedBusiness:
 		print "Campaign Status Report"
