@@ -8,6 +8,7 @@ from sqlalchemy.event import listen
 from src.base import Base
 from src.stringUtilities import stripWhiteSpace,stripSlash
 from env.environment import cluster
+from src.globusUtilities import transfer_file
 
 class File(Base):
     __tablename__ = 'files'
@@ -46,11 +47,8 @@ class File(Base):
         else:
             return False
 
-    def stageIn(self,Session,dir):
-        pass
-        #move a file to this location
-        #In directory dir
-        #return true if file now exists in this location
+    def stageIn(self,Session,direc):
+        transfer_file(self.fileName,direc,cluster,self.fileDir,location)
 
     @staticmethod
     def _stripFileNameDir(mapper, connection, target):

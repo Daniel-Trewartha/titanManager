@@ -4,9 +4,7 @@ import json
 import time
 import sys
 import webbrowser
-from env.environment import globusTokens
-
-from utils import enable_requests_logging, is_remote_session
+from env.environment import globusRefreshTokens
 
 from globus_sdk import (NativeAppAuthClient, TransferClient,
                         RefreshTokenAuthorizer)
@@ -58,10 +56,10 @@ def do_native_app_authentication(client_id, redirect_uri,
     return token_response.by_resource_server
 
 def establish_transfer_client():
-	#Establish access tokens, set up authorizer and transfer clients
-	tokens = None
-	try:
-		tokens = load_tokens_from_file(globusRefreshTokens)
+    #Establish access tokens, set up authorizer and transfer clients
+    tokens = None
+    try:
+        tokens = load_tokens_from_file(globusRefreshTokens)
     except:
         pass
 
@@ -86,11 +84,11 @@ def establish_transfer_client():
 
     transfer = TransferClient(authorizer=authorizer)
 
-    return transfer	
+    return transfer 
 
 def transfer_file(fileName,destinationPath,destinationLocation,originPath,originLocation):
-	transferClient = establish_transfer_client()
-	try:
+    transferClient = establish_transfer_client()
+    try:
         transfer.endpoint_autoactivate(originLocation)
     except GlobusAPIError as ex:
         print(ex)

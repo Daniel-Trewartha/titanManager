@@ -24,7 +24,7 @@ userName = 'danieltr'
 #Project - for building submission scripts
 projectCode = 'NPH103'
 #Globus endpoint for current cluster
-cluster = 'titan'
+cluster = 'olcf#dtn_atlas'
 #Directory that staged in input should go to
 inputDir = os.path.split(os.path.abspath(__file__))[0]
 #File that globus auth tokens should be stored in
