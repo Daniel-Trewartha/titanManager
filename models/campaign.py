@@ -111,9 +111,7 @@ class Campaign(Base):
         jobCount = 0
         nodeCount = 0
         for j in self.jobs:
-            print j.name, j.nodes+nodeCount, maxNodes, totalNodes
             if (j.status == "Ready" and j.nodes+nodeCount <= maxNodes):
-                print "Ready"
                 jobList.append(j)
                 nodeCount += j.nodes
                 jobCount += 1
