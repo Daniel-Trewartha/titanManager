@@ -101,15 +101,15 @@ ET.SubElement(iF1,'fileDir').text = workDir
 iF2 = ET.SubElement(iF,'elem')
 ET.SubElement(iF2,'name').text = checkOutputExec
 ET.SubElement(iF2,'fileDir').text = workDir
+#A file that needs to be transferred from a remote location
+iF3 = ET.SubElement(iF,'elem')
+ET.SubElement(iF3,'name').text = 'remoteData.txt'
+ET.SubElement(iF3,'fileDir').text = 'Data'
+ET.SubElement(iF3,'location').text = "Daniel's Laptop"
 oF = ET.SubElement(job2,'outputFiles')
 oF1 = ET.SubElement(oF,'elem')
 ET.SubElement(oF1,'name').text = output
 ET.SubElement(oF1,'fileDir').text = workDir
-#A file that needs to be transferred from a remote location
-iF3 = ET.SubElement(iF,'elem')
-ET.SubElement(iF1,'name').text = 'remoteData.txt'
-ET.SubElement(iF1,'fileDir').text = 'Data'
-ET.SubElement(iF1,'location').text = "Daniel's Laptop"
 
 #Write out the xml
 tree = ET.ElementTree(data)
