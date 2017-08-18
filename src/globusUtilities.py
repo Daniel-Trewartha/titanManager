@@ -3,12 +3,13 @@
 import json
 import time
 import sys
-import webbrowser
+import os
 from env.environment import globusRefreshTokens
 from env.globusSecret import secret
 
 from globus_sdk import ConfidentialAppAuthClient, TransferClient, RefreshTokenAuthorizer
 from globus_sdk.exc import GlobusAPIError
+import globus_sdk
 
 clientID = "3fedb375-4458-42d7-b17c-7f5d4be1ceac"
 scope = ('urn:globus:auth:scope:transfer.api.globus.org:all')
@@ -99,7 +100,7 @@ def establishTransferClient():
 def transfer_file(fileName,destinationPath,destinationLocation,originPath,originLocation):
     transferClient = establishTransferClient()
     try:
-        transfer.endpoint_autoactivate(originLocation)
+        transferClient.endpoint_autoactivate(originLocation)
     except GlobusAPIError as ex:
         print(ex)
         if ex.http_status == 401:
@@ -111,5 +112,5 @@ def transfer_file(fileName,destinationPath,destinationLocation,originPath,origin
     transferData = globus_sdk.TransferData(transferClient, originLocation,
                                  destinationLocation,
                                  sync_level="checksum")
-    transferData.add_item(os.path.join(originPath,filename),os.path.join(destinationPath,filename))
+    transferData.add_item(os.path.join(originPath,fileName),os.path.join(destinationPath,fileName))
     transferClient.submit_transfer(transferData)
