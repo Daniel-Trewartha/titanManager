@@ -4,3 +4,4 @@ env/*.db
 titanManager/
 *.xml
 *.o[0-9]*
+env/globusSecret.py

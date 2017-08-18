@@ -5,8 +5,9 @@ import time
 import sys
 import webbrowser
 from env.environment import globusRefreshTokens
+from env.globusSecret import secret
 
-from globus_sdk import NativeAppAuthClient, TransferClient, RefreshTokenAuthorizer
+from globus_sdk import ConfidentialAppAuthClient, TransferClient, RefreshTokenAuthorizer
 from globus_sdk.exc import GlobusAPIError
 
 clientID = "3fedb375-4458-42d7-b17c-7f5d4be1ceac"
@@ -31,27 +32,29 @@ def updateTokensFileOnRefresh(token_response):
     """
     saveTokensToFile(globusRefreshTokens, token_response.by_resource_server)
 
-def doNativeAppAuthentication(client_id,requested_scopes=None):
+
+def doClientCredentialsAppAuthentication(client_id, client_secret):
     """
-    Does a Native App authentication flow and returns a
+    Does a client credential grant authentication and returns a
     dict of tokens keyed by service name.
     """
-    client = NativeAppAuthClient(client_id=client_id)
-    # pass refresh_tokens=True to request refresh tokens
-    client.oauth2_start_flow(requested_scopes=scope,
-                             redirect_uri='https://auth.globus.org/v2/web/auth-code',
-                             refresh_tokens=True)
+    client = globus_sdk.ConfidentialAppAuthClient(
+            client_id=client_id,
+            client_secret=client_secret)
+    token_response = client.oauth2_client_credentials_tokens()
 
-    url = client.oauth2_get_authorize_url()
-
-    print('Please visit the url at \n{}'.format(url))
-
-    auth_code = input('Enter the auth code provided: ').strip()
-
-    token_response = client.oauth2_exchange_code_for_tokens(auth_code)
-
-    # return a set of tokens, organized by resource server name
     return token_response.by_resource_server
+
+
+def getConfidentialAppAuthorizer(client_id, client_secret):
+    tokens = doClientCredentialsAppAuthentication(
+            client_id=client_id,
+            client_secret=client_secret)
+    transfer_tokens = tokens['transfer.api.globus.org']
+    transfer_access_token = transfer_tokens['access_token']
+
+    return globus_sdk.AccessTokenAuthorizer(transfer_access_token)
+
 
 def acquireRefreshTokens():
     #Establish access tokens, set up authorizer and transfer clients
@@ -62,7 +65,7 @@ def acquireRefreshTokens():
         pass
 
     if not tokens:
-        tokens = doNativeAppAuthentication(clientID, scope)
+        tokens = doClientCredentialsAppAuthentication(clientID, client_secret)
         try:
             saveTokensToFile(globusRefreshTokens, tokens)
         except:
@@ -80,7 +83,7 @@ def establishTransferClient():
 
     transferTokens = tokens['transfer.api.globus.org']
 
-    auth_client = NativeAppAuthClient(client_id=clientID)
+    auth_client = getConfidentialAppAuthorizer(client_id=clientID,client_secret=secret)
 
     authorizer = RefreshTokenAuthorizer(
         transferTokens['refresh_token'],
