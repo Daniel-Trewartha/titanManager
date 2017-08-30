@@ -72,6 +72,7 @@ class Campaign(Base):
 
         #Do we have a currently running stager?
         if (self.__checkStager(Session)):
+            print "Existing Stager"
             return True
 
         #Which jobs have files that require staging?
@@ -90,7 +91,9 @@ class Campaign(Base):
         Session.commit()
         #If nothing requires staging, we should return False
         if (stageInList == []):
+            print "No Staging Required"
             return False
+        print "Staging :"+stageInList
         #Otherwise, launch a stager
         #Construct a bash script that runs the stager
         stagerScriptLoc = self.__createStagingScript(Session,stageInList)
