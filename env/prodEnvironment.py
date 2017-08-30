@@ -25,7 +25,8 @@ userName = 'danieltr'
 projectCode = 'NPH103'
 #Globus endpoint for current cluster
 cluster = 'olcf#dtn_atlas'
-localKeyFile = "/mnt/c/Users/danie/titanManager/.ssh/id_rsa.globus"
+#Local ssh key for globus
+localKeyFile = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'.ssh','id_rsa.globus'))
 globusUserName = "danieltrewartha"
 #Directory that staged in input should go to
 inputDir = os.path.split(os.path.abspath(__file__))[0]

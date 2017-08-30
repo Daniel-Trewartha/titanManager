@@ -32,7 +32,14 @@ def transferFile(fileName,destinationPath,destinationLocation,originPath,originL
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(globusHost, username=globusUserName, pkey=key)
 
-    stdin, stdout, stderr = ssh.exec_command("endpoint-activate "+endpoint)
+    stdin, stdout, stderr = ssh.exec_command("endpoint-activate "+originLocation)
+
+    err = stderr.readlines()
+    if (len(err) > 0):
+        print len(err)
+        print err
+
+    stdin, stdout, stderr = ssh.exec_command("endpoint-activate "+destinationLocation)
 
     err = stderr.readlines()
     if (len(err) > 0):
