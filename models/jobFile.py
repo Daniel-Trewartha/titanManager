@@ -8,7 +8,7 @@ from sqlalchemy.event import listen
 from src.base import Base
 from src.stringUtilities import stripWhiteSpace,stripSlash
 from env.environment import cluster
-from src.globusUtilities import transfer_file
+from src.globusUtilities import transferFile
 
 class File(Base):
     __tablename__ = 'files'
@@ -48,7 +48,7 @@ class File(Base):
             return False
 
     def stageIn(self,Session,direc):
-        transfer_file(self.name,direc,cluster,self.fileDir,self.location)
+        transferFile(self.name,direc,cluster,self.fileDir,self.location)
 
     @staticmethod
     def _stripFileNameDir(mapper, connection, target):

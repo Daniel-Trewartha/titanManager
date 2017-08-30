@@ -104,7 +104,7 @@ ET.SubElement(iF2,'fileDir').text = workDir
 #A file that needs to be transferred from a remote location
 iF3 = ET.SubElement(iF,'elem')
 ET.SubElement(iF3,'name').text = 'remoteData.txt'
-ET.SubElement(iF3,'fileDir').text = 'Data'
+ET.SubElement(iF3,'fileDir').text = 'C/Users/danie/titanManager/Data/'
 ET.SubElement(iF3,'location').text = "danieltrewartha#9089c5c6-82b1-11e7-a880-22000a92523b"
 oF = ET.SubElement(job2,'outputFiles')
 oF1 = ET.SubElement(oF,'elem')

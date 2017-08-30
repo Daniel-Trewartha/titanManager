@@ -28,7 +28,7 @@ def testActivation(endpoint, keyFile):
 
 def transferFile(fileName,destinationPath,destinationLocation,originPath,originLocation):
     ssh = paramiko.SSHClient()
-    key = paramiko.RSAKey.from_private_key_file(keyFile)
+    key = paramiko.RSAKey.from_private_key_file(localKeyFile)
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(globusHost, username=globusUserName, pkey=key)
 
@@ -46,6 +46,10 @@ def transferFile(fileName,destinationPath,destinationLocation,originPath,originL
         print len(err)
         print err
 
-    stdin, stdout, stderr = ssh.exec_command("transfer "originLocation+os.path.join(originPathPath,fileName)+" "+originLocation+os.path.join(originPathPath,fileName))
+    print "transfer -- "+originLocation+"/"+os.path.join(originPath,fileName)+" "+destinationLocation+"/"+os.path.join(destinationPath,fileName)
+    stdin, stdout, stderr = ssh.exec_command("transfer -- "+originLocation+"/"+os.path.join(originPath,fileName)+" "+destinationLocation+"/"+os.path.join(destinationPath,fileName))
+
+    print stdout.readlines()
+    print stderr.readlines()
 
     ssh.close()
