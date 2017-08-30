@@ -6,7 +6,7 @@
 #then produce a report
 import os, time, sys
 from env import prodEnvironment
-from env.environment import backfillMode
+from env.environment import backfillMode, cluster, localKeyFile
 from models.job import Job
 from models.jobFile import File
 from models.campaign import Campaign
@@ -14,7 +14,7 @@ from src.base import Base, session_scope, engine
 from src.campaignManager import submitJobs
 from src.pbsUtilities import getJobStatuses
 from src.stringUtilities import parseTimeString
-from src.globusUtilities import acquireRefreshTokens
+from src.globusUtilities import testActivation
 
 def main():
 
@@ -23,7 +23,7 @@ def main():
 	else:
 		bfM = True
 	#Acquire globus tokens, if we don't already have them
-	acquireRefreshTokens()
+	testActivation(cluster,localKeyFile)
 	unfinishedBusiness = True
 	while unfinishedBusiness:
 		print "Campaign Status Report"

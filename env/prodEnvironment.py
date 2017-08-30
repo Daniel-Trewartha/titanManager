@@ -25,6 +25,8 @@ userName = 'danieltr'
 projectCode = 'NPH103'
 #Globus endpoint for current cluster
 cluster = 'olcf#dtn_atlas'
+localKeyFile = "/mnt/c/Users/danie/titanManager/.ssh/id_rsa.globus"
+globusUserName = "danieltrewartha"
 #Directory that staged in input should go to
 inputDir = os.path.split(os.path.abspath(__file__))[0]
 #File that globus auth tokens should be stored in
@@ -49,3 +51,5 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("fileStagerPath = \""+fileStagerPath+"\"\n")
 	envFile.write("inputDir = \""+inputDir+"\"\n")
 	envFile.write("globusRefreshTokens =\""+globusRefreshTokens+"\"\n")
+	envFile.write("globusUserName =\""+globusUserName+"\"\n")
+	envFile.write("localKeyFile =\"" + localKeyFile + "\"\n")

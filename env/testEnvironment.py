@@ -14,6 +14,8 @@ maxWallTime = datetime.timedelta(hours=1)
 maxJobFails = 1
 maxStageIns = 1
 userName = 'danieltr'
+globusUserName = "danieltrewartha"
+localKeyFile = "/mnt/c/Users/danie/titanManager/.ssh/id_rsa.globus"
 projectCode = 'NPH103'
 cluster = 'olcf#dtn_atlas'
 inputDir = os.path.split(os.path.abspath(__file__))[0]
@@ -36,3 +38,5 @@ with open(os.path.join(envVarsPath,envName),'w') as envFile:
 	envFile.write("fileStagerPath = \""+fileStagerPath+"\"\n")
 	envFile.write("inputDir = \""+inputDir+"\"\n")
 	envFile.write("globusRefreshTokens =\""+globusRefreshTokens+"\"\n")
+	envFile.write("globusUserName =\""+globusUserName+"\"\n")
+	envFile.write("localKeyFile =\"" + localKeyFile + "\"\n")
