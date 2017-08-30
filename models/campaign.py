@@ -71,7 +71,7 @@ class Campaign(Base):
         #If it doesn't exist, launch it
 
         #Do we have a currently running stager?
-        if (self.__checkStager(Session)):
+        if (self.__checkStager()):
             print "Existing Stager"
             return True
 
@@ -93,7 +93,7 @@ class Campaign(Base):
         if (stageInList == []):
             print "No Staging Required"
             return False
-        print "Staging :"+stageInList
+        print "Staging :"+str(stageInList)
         #Otherwise, launch a stager
         #Construct a bash script that runs the stager
         stagerScriptLoc = self.__createStagingScript(Session,stageInList)
@@ -249,7 +249,7 @@ class Campaign(Base):
 
     ## Private Methods
 
-    def __checkStager(self,Session):
+    def __checkStager(self):
         #Return true if this campaign has an active stager
         #False otherwise
         if (not hasattr(self,'stagerProcess')):
@@ -376,7 +376,7 @@ class Campaign(Base):
 
     def __killStager(self):
         #Ensure a stager is killed if the main program exits
-        if (hasattr(self,"stagerProcess")):
+        if (self.__checkStager()):
             self.stagerProcess.kill()
 
     @staticmethod
