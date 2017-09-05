@@ -17,12 +17,23 @@ class File(Base):
     id = Column(Integer, primary_key=True)
     name = Column('name',String,nullable=False)
     fileDir = Column('fileDir',String,nullable=False)
+    #Job this file is associated with
     jobID = Column('jobID',Integer,ForeignKey("jobs.id"),nullable=False)
+    #Whether this is an input or an output file
     ioType = Column('ioType',String,default="output")
-    location = Column('location',String,default=cluster)
-    stageInAttempts = Column('stageInAttempts',Integer,default=0)
-    retainLocalCopy = Column('retainLocalCopy',Boolean,default=True)
     job = relationship("Job", back_populates="files")
+
+    #Globus attributes
+    #The globus id of the file's location
+    location = Column('location',String,default=cluster)
+    #The number of times a stage in has been attempted for this file
+    stageInAttempts = Column('stageInAttempts',Integer,default=0)
+    #Whether a local copy of this should be retained after the job is complete
+    retainLocalCopy = Column('retainLocalCopy',Boolean,default=True)
+    #The globus id this file should be staged out to after job is complete
+    stageOutLocation = Column('stageOutLocation',String,nullable=True)
+    #The folder this file should be staged out to after this job is complete
+    stageOutDir = Column('stageOutDir',String,nullable=True)
 
     def filePath(self):
         return os.path.join(self.fileDir,self.name)
@@ -49,6 +60,9 @@ class File(Base):
 
     def stageIn(self,Session,direc):
         transferFile(self.name,direc,cluster,self.fileDir,self.location)
+
+    def stageOut(self,Session):
+        transferFile(self.name,self.stageOutDir,self.stageOutLocation,self.fileDir,cluster)
 
     @staticmethod
     def _stripFileNameDir(mapper, connection, target):

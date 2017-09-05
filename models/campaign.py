@@ -72,7 +72,6 @@ class Campaign(Base):
 
         #Do we have a currently running stager?
         if (self.__checkStager()):
-            print "Existing Stager"
             return True
 
         #Which jobs have files that require staging?
@@ -91,13 +90,44 @@ class Campaign(Base):
         Session.commit()
         #If nothing requires staging, we should return False
         if (stageInList == []):
-            print "No Staging Required"
             return False
         print "Staging :"+str(stageInList)
         #Otherwise, launch a stager
         #Construct a bash script that runs the stager
-        stagerScriptLoc = self.__createStagingScript(Session,stageInList)
+        stagerScriptLoc = self.__createStagingScript(Session,stageInList,'In')
         #run the script
+        cmd = "bash "+stagerScriptLoc
+        self.stagerProcess = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
+        return True
+
+    def stageOut(self,Session):
+        #Find out which jobs have files that require staging
+        #Them launch the staging-out process
+        #Return true if stager is launched or on-going
+        #Return False if no stager is required
+
+        #Find out what's going on with previous stager, if it exists
+        #If it exists and is still running, don't launch another
+        #If it exists and has finished, check to see that files were successfully staged, and launch another if necessary
+        #If it doesn't exist, launch it
+
+        #Do we have a currently running stager?
+        if (self.__checkStager()):
+            return True
+
+        #Create a list of all files that require staging
+        stageOutList = []
+        for j in self.jobs:
+            if (j.status == "Successful"):
+                stageOutList += j.listStageOutFiles(Session)
+        #If nothing requires staging, we should return False
+        if (stageOutList == []):
+            return False
+        print "Staging :"+str(stageOutList)
+        #Otherwise, launch a stager
+        #Construct a bash script that runs the stager
+        stagerScriptLoc = self.__createStagingScript(Session,stageOutList,'Out')
+        #Run the script
         cmd = "bash "+stagerScriptLoc
         self.stagerProcess = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
         return True
@@ -215,6 +245,11 @@ class Campaign(Base):
         Session.commit()
         return successList
 
+    def cleanUp(self,Session):
+        #Perform cleanup of files, create a manifest
+        self.stageOut(Session)
+        self.clearLocalFiles(Session)
+
     #hybrid properties
 
     @hybrid_property
@@ -252,24 +287,20 @@ class Campaign(Base):
     def __checkStager(self):
         #Return true if this campaign has an active stager
         #False otherwise
-        print "Stager Checker"
         if (not hasattr(self,'stagerProcess')):
-            print "No object attr"
             return False
         else:
             rC = self.stagerProcess.poll()
             if (rC is None):
                 return True
             else:
-                print "Reporting closed"
-                print rC
                 return False
 
-    def __createStagingScript(self,Session,stageInList):
+    def __createStagingScript(self,Session,stageInList,direction='In'):
         scriptName = self.name+"Stager.bash"
         with open(scriptName,'w') as script:
             script.write("source "+virtualEnvPath+"\n")
-            updateString = "python "+fileStagerPath+" '"
+            updateString = "python "+fileStagerPath+" "+direction+" '"
             for f in stageInList:
                 updateString += str(f.id)
             updateString += "' \n"

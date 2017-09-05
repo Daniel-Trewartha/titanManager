@@ -47,6 +47,8 @@ def main():
 		for c in Session.query(Campaign).all():
 			if (c.unfinishedBusiness(Session)):
 				unfinishedBusiness = True
+			else:
+				c.cleanUp(Session)
 		time.sleep(5)
 
 if __name__ == '__main__':

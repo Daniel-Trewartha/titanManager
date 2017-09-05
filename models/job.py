@@ -72,6 +72,13 @@ class Job(Base):
             stageInList.append(iF)
         return stageInList
 
+    def listStageOutFiles(self,Session):
+        #Return a list of files attached to this job that require staging in
+        stageInList = []
+        for iF in [iF for iF in self.files if (iF.ioType == 'output' and iF.stageOutLocation is not None and iF.stageOutDir is not None)]:
+            stageInList.append(iF)
+        return stageInList
+
     #Private methods
 
     def __checkOut(self,Session):
