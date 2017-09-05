@@ -252,13 +252,17 @@ class Campaign(Base):
     def __checkStager(self):
         #Return true if this campaign has an active stager
         #False otherwise
+        print "Stager Checker"
         if (not hasattr(self,'stagerProcess')):
+            print "No object attr"
             return False
         else:
             rC = self.stagerProcess.poll()
-            if (rC):
+            if (rC is None):
                 return True
             else:
+                print "Reporting closed"
+                print rC
                 return False
 
     def __createStagingScript(self,Session,stageInList):

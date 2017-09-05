@@ -47,7 +47,7 @@ def main():
 		for c in Session.query(Campaign).all():
 			if (c.unfinishedBusiness(Session)):
 				unfinishedBusiness = True
-		time.sleep(60)
+		time.sleep(5)
 
 if __name__ == '__main__':
     with session_scope(engine) as Session:
