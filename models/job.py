@@ -79,6 +79,11 @@ class Job(Base):
             stageInList.append(iF)
         return stageInList
 
+    def clearLocalFiles(self,Session):
+        for f in self.files:
+            if (not f.retainLocalCopy and not f.local(Session)):
+                f.remove(Session)
+
     #Private methods
 
     def __checkOut(self,Session):

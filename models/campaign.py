@@ -248,7 +248,7 @@ class Campaign(Base):
     def cleanUp(self,Session):
         #Perform cleanup of files, create a manifest
         self.stageOut(Session)
-        self.clearLocalFiles(Session)
+        self.__clearLocalFiles(Session)
 
     #hybrid properties
 
@@ -283,6 +283,11 @@ class Campaign(Base):
         self._checkWallTime = checkWallTime
 
     ## Private Methods
+
+    def __clearLocalFiles(self,Session):
+        for j in self.jobs:
+            if(j.status == 'Successful'):
+                j.clearLocalFiles(Session)
 
     def __checkStager(self):
         #Return true if this campaign has an active stager
