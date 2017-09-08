@@ -9,6 +9,7 @@ from src.base import Base
 from src.stringUtilities import stripWhiteSpace,stripSlash
 from env.environment import cluster
 from src.globusUtilities import transferFile
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class File(Base):
     __tablename__ = 'files'
@@ -35,9 +36,6 @@ class File(Base):
     #The folder this file should be staged out to after this job is complete
     stageOutDir = Column('stageOutDir',String,nullable=True)
 
-    def filePath(self):
-        return os.path.join(self.fileDir,self.name)
-
     def exists(self,Session):
         if (os.path.exists(self.filePath())):
             return True
@@ -63,6 +61,12 @@ class File(Base):
 
     def stageOut(self,Session):
         transferFile(self.name,self.stageOutDir,self.stageOutLocation,self.fileDir,cluster)
+
+    #hybrid properties
+
+    @hybrid_property
+    def filePath(self):
+        return os.path.join(self.fileDir,self.name)
 
     @staticmethod
     def _stripFileNameDir(mapper, connection, target):

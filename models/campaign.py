@@ -249,6 +249,7 @@ class Campaign(Base):
         #Perform cleanup of files, create a manifest
         self.stageOut(Session)
         self.__clearLocalFiles(Session)
+        self.__prepareManifest(Session)
 
     #hybrid properties
 
@@ -283,6 +284,9 @@ class Campaign(Base):
         self._checkWallTime = checkWallTime
 
     ## Private Methods
+
+    def __prepareManifest(self,Session):
+        pass
 
     def __clearLocalFiles(self,Session):
         for j in self.jobs:
