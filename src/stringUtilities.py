@@ -4,7 +4,11 @@ def parseTimeString(timeString):
 	#Receive a string of the form hh:mm:ss, return a datetime timedelta object
 	hms = str.split(timeString,':')
 	if (len(hms) == 3):
-		tDelta = datetime.timedelta(hours = int(hms[0]), minutes = int(hms[1]), seconds = int(hms[2]))
+                #Check for slurm d-h:m:s format
+                if '-' in hms[0]:
+                        tDelta = datetime.timedelta(days = int(str.split(hms[0],'-')[0]), hours = int(str.split(hms[0],'-')[1]), minutes = int(hms[1]), seconds = int(hms[2]))
+                else:
+                        tDelta = datetime.timedelta(hours = int(hms[0]), minutes = int(hms[1]), seconds = int(hms[2]))
 	else:
 		tDelta = datetime.timedelta()
 	return tDelta

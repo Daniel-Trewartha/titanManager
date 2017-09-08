@@ -4,38 +4,38 @@ import src.stringUtilities as stringUtilities
 from env.environment import totalNodes,userName
 
 def getFreeResources():
-	cmd = "qstat -a | grep ' R '"
+	cmd = "squeue -a | grep ' R '"
 	qstatOut = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True).stdout.read()
 	freeNodes = int(totalNodes)
 	minWallTime = datetime.timedelta(hours=3000)
 	for line in str.split(qstatOut,'\n'):
 		sLine = str.split(line)
-		if (len(sLine) == 11):
-			if(int(sLine[5])):
-				freeNodes -= int(sLine[5])
-			wallTime = stringUtilities.parseTimeString(str.split(line)[8]) - stringUtilities.parseTimeString(str.split(line)[10])
+		if (len(sLine) == 8):
+			if(int(sLine[6])):
+				freeNodes -= int(sLine[6])
+			wallTime = stringUtilities.parseTimeString(str.split(line)[5])
 			if (wallTime < minWallTime and wallTime.total_seconds() > 0):
 				minWallTime = wallTime
 	return freeNodes, minWallTime
 
 def getQueuedJobs():
-	cmd = "qstat -u "+userName
+	cmd = "squeue -u "+userName
 	qstatOut = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True).stdout.read()
 	queuedStats = ['Q','H','R','S']
 	queuedJobs = 0
 	for line in str.split(qstatOut,'\n'):
 		splLine = str.split(line)
-		if (len(splLine) == 11 and splLine[1] == userName):
-			if splLine[9] in queuedStats:
+		if (len(splLine) == 8 and splLine[3] == userName):
+			if splLine[4] in queuedStats:
 				queuedJobs += 1
 	return queuedJobs
 
 def getJobStatuses():
-	cmd = "qstat -u "+userName
+	cmd = "squeue -u "+userName
 	qstatOut = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True).stdout.read()
 	jobsDict = {}
 	for line in str.split(qstatOut,'\n'):
 		splLine = str.split(line)
-		if (len(splLine) == 11 and splLine[1] == userName):
-			jobsDict[splLine[0]] = splLine[9]
+		if (len(splLine) == 8 and splLine[3] == userName):
+			jobsDict[splLine[0]] = splLine[4]
 	return jobsDict

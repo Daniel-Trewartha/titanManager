@@ -72,7 +72,7 @@ class Campaign(Base):
                 break
         if (len(jobList) > 0):
             scriptName = self.__createSubmissionScript(Session,jobList)
-            cmd = "qsub "+scriptName
+            cmd = "sbatch "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsID = pbsSubmit.stdout.read().strip()
             try:
@@ -203,25 +203,20 @@ class Campaign(Base):
         #construct a job submission script from a list of jobs
         scriptName = self.name+".csh"
         nodes = 0
-        wraprun = 'wraprun '
         for j in jobList:
             nodes += j.nodes
-            wraprun += '-n '+str(j.nodes)
-            wraprun += ' '+j.executionCommand+' : '
-        wraprun = wraprun[:-2]
         with open(scriptName,'w') as script:
-            script.write("#PBS -A "+projectCode+"\n")
-            script.write("#PBS -N "+self.name+"\n")
+            script.write("#! /bin/csh \n")
+            script.write("#SBATCH -J "+self.name+"\n")
             if(self.wallTime):
-                script.write("#PBS -l walltime="+str(self.wallTime)+"\n")
+                script.write("#SBATCH -t "+str(self.wallTime)+"\n")
             else: 
                 maxWT = parseTimeString("00:00:10")
                 for j in jobList:
                     if ((j.wallTime is not None) and j.wallTime > maxWT):
                         maxWT = j.wallTime
-                script.write("#PBS -l walltime="+str(maxWT)+"\n")
-            script.write("#PBS -l nodes="+str(nodes)+"\n")
-            script.write("#PBS -j oe \n")
+                script.write("#SBATCH -t "+str(maxWT)+"\n")
+            script.write("#SBATCH -N "+str(nodes)+"\n")
 
             script.write(self.header+"\n")
 
@@ -232,7 +227,12 @@ class Campaign(Base):
             updateString += "' R\n"
             script.write(updateString)
             script.write("deactivate\n")
-            script.write(wraprun+"\n")
+            for j in jobList:
+                run = 'srun -n '
+                run += str(j.nodes)
+                run += ' '+j.executionCommand+' \n'
+            script.write(run)
+
             script.write(str(self.footer)+"\n")
             script.write("source "+virtualEnvPath+"\n")
             updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
@@ -247,29 +247,26 @@ class Campaign(Base):
         #construct a job check submission script from a list of jobs
         scriptName = self.name+"Check.csh"
         nodes = 0
-        wraprun = 'wraprun '
         for j in jobList:
             if (j.checkOutputCommand):
-                nodes += j.nodes
-                wraprun += '-n '+str(j.nodes)
-                wraprun += ' '+j.checkOutputCommand+' : '
-            else:
-                print "Warning: job " + j.jobName+", "+str(j.id)+" has no check script"
-        wraprun = wraprun[:-2]
+                nodes += j.checkNodes
         with open(scriptName,'w') as script:
-            script.write("#PBS -A "+projectCode+"\n")
-            script.write("#PBS -N "+self.name+"Check\n")
+            script.write("#! /bin/csh \n")
+            script.write("#SBATCH -J "+self.name+"Check\n")
             if(self.wallTime):
-                script.write("#PBS -l walltime="+str(self.checkWallTime)+"\n")
+                script.write("#SBATCH -t "+str(self.checkWallTime)+"\n")
             else: 
                 maxWT = parseTimeString("00:00:10")
                 for j in jobList:
                     if ((j.checkWallTime is not None) and j.checkWallTime > maxWT):
                         maxWT = j.checkWallTime
-                script.write("#PBS -l walltime="+str(maxWT)+"\n")
-            script.write("#PBS -l nodes="+str(nodes)+"\n")
-            script.write("#PBS -j oe \n")
-
+                script.write("#SBATCH -t "+str(maxWT)+"\n")
+            script.write("#SBATCH -N nodes="+str(nodes)+"\n")
+            for j in jobList:
+                run = 'srun -n '
+                run += str(j.checkNodes)
+                run += ' '+j.checkOutputCommand+' \n'
+            script.write(run)
             script.write(self.checkHeader+"\n")
             script.write(wraprun+"\n")
             script.write(str(self.checkFooter)+"\n")

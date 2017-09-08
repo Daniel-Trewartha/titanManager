@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 import os,subprocess
 
 #Create a demonstration 'test' campaign with two jobs
-workDir = "/lustre/atlas/scratch/danieltr/nph103"
+workDir = "/project/projectdirs/m2156"
 #Mandatory fields for a campaign - name
 data = ET.Element("Data")
 campaign = ET.SubElement(data,"Campaign")
@@ -49,10 +49,10 @@ ET.SubElement(job1,"wallTime").text = '00:10:00'
 #test Job creates a file at workDir
 #Note use of serial for a non-MPI call
 #Also note arguments to executable fed in as usual with serial
-ET.SubElement(job1,"executionCommand").text = "serial "+os.path.join(workDir,outputExec)+" 'Successful!' "+os.path.join(workDir,output)
+ET.SubElement(job1,"executionCommand").text = os.path.join(workDir,outputExec)+" 'Successful!' "+os.path.join(workDir,output)
 #Check command to be executed with wraprun
 #test Job's check copies the contents of the output file verbatim
-ET.SubElement(job1,"checkOutputCommand").text = "serial "+os.path.join(workDir,checkOutputExec)+" "+os.path.join(workDir,output)+" "+os.path.join(workDir,checkOutput)
+ET.SubElement(job1,"checkOutputCommand").text = os.path.join(workDir,checkOutputExec)+" "+os.path.join(workDir,output)+" "+os.path.join(workDir,checkOutput)
 #Front end script to verify the output of checker
 #Should write True or False to stdout
 #test Job greps 'Successful' in the expected check output location
@@ -78,7 +78,6 @@ ET.SubElement(oF1,'name').text = output
 ET.SubElement(oF1,'fileDir').text = workDir
 
 #Another test job in the same campaign that does the same thing...
-workDir = "/lustre/atlas/scratch/danieltr/nph103"
 output = 'testJob2.out'
 checkOutput = 'testJob2Check.out'
 job2 = ET.SubElement(data,"Job")
@@ -87,10 +86,10 @@ ET.SubElement(job2,"checkNodes").text = str(1)
 ET.SubElement(job2,"nodes").text = str(1)
 ET.SubElement(job2,"checkWallTime").text = '00:10:00'
 ET.SubElement(job2,"wallTime").text = '00:10:00'
-ET.SubElement(job2,"executionCommand").text = "serial "+os.path.join(workDir,outputExec)+" 'Successful!' "+os.path.join(workDir,output)
+ET.SubElement(job2,"executionCommand").text = os.path.join(workDir,outputExec)+" 'Successful!' "+os.path.join(workDir,output)
 #Check command to be executed with wraprun
 #test Job's check copies the contents of the output file verbatim
-ET.SubElement(job2,"checkOutputCommand").text = "serial "+os.path.join(workDir,checkOutputExec)+" "+os.path.join(workDir,output)+" "+os.path.join(workDir,checkOutput)
+ET.SubElement(job2,"checkOutputCommand").text = os.path.join(workDir,checkOutputExec)+" "+os.path.join(workDir,output)+" "+os.path.join(workDir,checkOutput)
 ET.SubElement(job2,"checkOutputScript").text = "grep 'Successful' "+os.path.join(workDir,checkOutput)
 ET.SubElement(job2,"campaign").text = "Test"
 iF = ET.SubElement(job2,'inputFiles')
