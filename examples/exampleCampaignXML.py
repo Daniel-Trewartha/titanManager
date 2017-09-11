@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 import os,subprocess
 
 #Create a demonstration 'test' campaign with two jobs
-workDir = "/project/projectdirs/m2156"
+workDir = os.environ['SCRATCH']
 #Mandatory fields for a campaign - name
 data = ET.Element("Data")
 campaign = ET.SubElement(data,"Campaign")
@@ -11,10 +11,11 @@ ET.SubElement(campaign,"name").text = 'Test'
 #Campaign can have a wall time - if it does not infer one from the jobs
 ET.SubElement(campaign,"wallTime").text = '00:10:00'
 ET.SubElement(campaign,"checkWallTime").text = '00:10:00'
+ET.SubElement(campaign,"workDir").text = workDir
 #headers and footers for pbs submission scripts
-header = "module load wraprun \ncd "+workDir
+header = ""
 footer = ""
-checkHeader = "module load wraprun \ncd "+workDir
+checkHeader = ""
 checkFooter = ""
 ET.SubElement(campaign,"header").text = header
 ET.SubElement(campaign,"footer").text = footer

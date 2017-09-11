@@ -1,7 +1,7 @@
 import os,sys,datetime
 
 localDBFile = os.path.split(os.path.abspath(__file__))[0]+"/manager.db"
-virtualEnvPath = os.path.join('/ccs/home/danieltr/titanManager',"titanManager","bin","activate")
+virtualEnvPath = "activate titanManager"
 jobStatusManagerPath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..','jobStatusManager.py'))
 envVarsPath = os.path.split(os.path.abspath(__file__))[0]
 totalNodes = "18649"
@@ -9,7 +9,7 @@ envName = 'environment.py'
 backfillMode = False
 maxJobs = 10
 maxWallTime = datetime.timedelta(hours=1)
-userName = 'danieltr'
+userName = os.environ['USER']
 projectCode = 'NPH103'
 
 with open(os.path.join(envVarsPath,envName),'w') as envFile:

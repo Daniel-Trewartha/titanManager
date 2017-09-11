@@ -19,6 +19,7 @@ class Campaign(Base):
     id = Column(Integer, primary_key=True)
     name = Column('name',String,unique=True,nullable=False)
     jobs = relationship("Job", back_populates="campaign",cascade="all, delete-orphan")
+    workDir = Column('workDir',String,default=os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
     header = Column('header',String)
     footer = Column('footer',String)
     checkHeader = Column('checkHeader',String)
@@ -201,7 +202,7 @@ class Campaign(Base):
 
     def __createSubmissionScript(self, Session, jobList):
         #construct a job submission script from a list of jobs
-        scriptName = self.name+".csh"
+        scriptName = os.path.join(self.workDir,self.name+".csh")
         nodes = 0
         for j in jobList:
             nodes += j.nodes
@@ -245,7 +246,7 @@ class Campaign(Base):
 
     def __createCheckSubmissionScript(self, Session, jobList):
         #construct a job check submission script from a list of jobs
-        scriptName = self.name+"Check.csh"
+        scriptName = os.path.join(self.workDir,self.name+"Check.csh")
         nodes = 0
         for j in jobList:
             if (j.checkOutputCommand):
