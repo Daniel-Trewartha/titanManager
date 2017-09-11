@@ -20,6 +20,7 @@ class Campaign(Base):
     id = Column(Integer, primary_key=True)
     name = Column('name',String,unique=True,nullable=False)
     jobs = relationship("Job", back_populates="campaign",cascade="all, delete-orphan")
+    workdir = Column('workdir',String,default=os.path.split(os.path.abspath(__file__))[0])
     header = Column('header',String)
     footer = Column('footer',String)
     checkHeader = Column('checkHeader',String)
@@ -306,7 +307,7 @@ class Campaign(Base):
                 return False
 
     def __createStagingScript(self,Session,stageInList,direction='In'):
-        scriptName = self.name+"Stager.bash"
+        scriptName = os.path.join(self.workdir,self.name+"Stager.bash")
         with open(scriptName,'w') as script:
             script.write("source "+virtualEnvPath+"\n")
             updateString = "python "+fileStagerPath+" "+direction+" '"
@@ -319,7 +320,7 @@ class Campaign(Base):
 
     def __createSubmissionScript(self, Session, jobList):
         #construct a job submission script from a list of jobs
-        scriptName = self.name+".csh"
+        scriptName = os.path.join(self.workdir,self.name+".csh")
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
@@ -363,7 +364,7 @@ class Campaign(Base):
 
     def __createCheckSubmissionScript(self, Session, jobList):
         #construct a job check submission script from a list of jobs
-        scriptName = self.name+"Check.csh"
+        scriptName = os.path.join(self.workdir,self.name+"Check.csh")
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
