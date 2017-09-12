@@ -254,11 +254,12 @@ class Campaign(Base):
         for j in jobList:
             if (j.checkOutputCommand):
                 nodes += j.checkNodes
-                with open(confName,'w') as script:
-        nodesListed = 0
-        for i,j in enumerate(jobList):
-            script.write(str(nodesListed)+'-'+str(nodesListed+j.nodes)+' '+j.executionCommand+'\n')
-            nodesListed += j.nodes
+        with open(confName,'w') as script:
+            nodesListed = 0
+            for i,j in enumerate(jobList):
+                if(j.checkOutputCommand):
+                    script.write(str(nodesListed)+'-'+str(nodesListed+j.checkNodes)+' '+j.executionCommand+'\n')
+                    nodesListed += j.checkNodes
         with open(scriptName,'w') as script:
             script.write("#! /bin/bash \n")
             script.write("#SBATCH -J "+self.name+"Check\n")
