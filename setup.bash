@@ -1,7 +1,5 @@
 #! /bin/bash
 
 module load python
-conda create -n titanManager
+conda create -n titanManager --file requirements.txt
 source activate titanManager
-conda install --file requirements.txt
-#pip standard repos do not find faker for some reason

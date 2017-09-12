@@ -75,7 +75,7 @@ class Campaign(Base):
             scriptName = self.__createSubmissionScript(Session,jobList)
             cmd = "sbatch "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-            pbsID = pbsSubmit.stdout.read().strip()
+            pbsID = str.split(pbsSubmit.stdout.read().strip())[-1]
             try:
                 int(pbsID)
             except ValueError:
@@ -108,9 +108,9 @@ class Campaign(Base):
                 break
         if (len(jobList) > 0):
             scriptName = self.__createCheckSubmissionScript(Session,jobList)
-            cmd = "qsub "+scriptName
+            cmd = "sbatch "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-            pbsID = pbsSubmit.stdout.read().strip()
+            pbsID = str.split(pbsSubmit.stdout.read().strip())[-1]
             try:
                 int(pbsID)
             except ValueError:
@@ -202,12 +202,12 @@ class Campaign(Base):
 
     def __createSubmissionScript(self, Session, jobList):
         #construct a job submission script from a list of jobs
-        scriptName = os.path.join(self.workDir,self.name+".csh")
+        scriptName = os.path.join(self.workDir,self.name+".bash")
         nodes = 0
         for j in jobList:
             nodes += j.nodes
         with open(scriptName,'w') as script:
-            script.write("#! /bin/csh \n")
+            script.write("#! /bin/bash \n")
             script.write("#SBATCH -J "+self.name+"\n")
             if(self.wallTime):
                 script.write("#SBATCH -t "+str(self.wallTime)+"\n")
@@ -227,7 +227,7 @@ class Campaign(Base):
                 updateString += str(j.id)+" "
             updateString += "' R\n"
             script.write(updateString)
-            script.write("deactivate\n")
+            script.write("source deactivate\n")
             for j in jobList:
                 run = 'srun -n '
                 run += str(j.nodes)
@@ -241,18 +241,18 @@ class Campaign(Base):
                 updateString += str(j.id)+" "
             updateString += "' C\n"
             script.write(updateString)
-            script.write("deactivate\n")
+            script.write("source deactivate\n")
         return scriptName
 
     def __createCheckSubmissionScript(self, Session, jobList):
         #construct a job check submission script from a list of jobs
-        scriptName = os.path.join(self.workDir,self.name+"Check.csh")
+        scriptName = os.path.join(self.workDir,self.name+"Check.bash")
         nodes = 0
         for j in jobList:
             if (j.checkOutputCommand):
                 nodes += j.checkNodes
         with open(scriptName,'w') as script:
-            script.write("#! /bin/csh \n")
+            script.write("#! /bin/bash \n")
             script.write("#SBATCH -J "+self.name+"Check\n")
             if(self.wallTime):
                 script.write("#SBATCH -t "+str(self.checkWallTime)+"\n")
@@ -262,14 +262,13 @@ class Campaign(Base):
                     if ((j.checkWallTime is not None) and j.checkWallTime > maxWT):
                         maxWT = j.checkWallTime
                 script.write("#SBATCH -t "+str(maxWT)+"\n")
-            script.write("#SBATCH -N nodes="+str(nodes)+"\n")
+            script.write("#SBATCH -N "+str(nodes)+"\n")
             for j in jobList:
                 run = 'srun -n '
                 run += str(j.checkNodes)
                 run += ' '+j.checkOutputCommand+' \n'
-            script.write(run)
             script.write(self.checkHeader+"\n")
-            script.write(wraprun+"\n")
+            script.write(run+"\n")
             script.write(str(self.checkFooter)+"\n")
             script.write("source "+virtualEnvPath+"\n")
             updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
@@ -277,7 +276,7 @@ class Campaign(Base):
                 updateString += str(j.id)+" "
             updateString += "' Checked\n"
             script.write(updateString)
-            script.write("deactivate\n")
+            script.write("source deactivate\n")
         return scriptName
 
     def __checkInput(self,Session,jobList=[]):

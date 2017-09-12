@@ -13,9 +13,9 @@ ET.SubElement(campaign,"wallTime").text = '00:10:00'
 ET.SubElement(campaign,"checkWallTime").text = '00:10:00'
 ET.SubElement(campaign,"workDir").text = workDir
 #headers and footers for pbs submission scripts
-header = ""
+header = "#SBATCH -p debug\n#SBATCH -C haswell\nmodule load python"
 footer = ""
-checkHeader = ""
+checkHeader = header
 checkFooter = ""
 ET.SubElement(campaign,"header").text = header
 ET.SubElement(campaign,"footer").text = footer
