@@ -203,9 +203,15 @@ class Campaign(Base):
     def __createSubmissionScript(self, Session, jobList):
         #construct a job submission script from a list of jobs
         scriptName = os.path.join(self.workDir,self.name+".bash")
+        confName = os.path.join(self.workDir,self.name+".conf")
         nodes = 0
         for j in jobList:
             nodes += j.nodes
+        with open(confName,'w') as script:
+            nodesListed = 0
+            for i,j in enumerate(jobList):
+                script.write(str(nodesListed)+'-'+str(nodesListed+j.nodes)+' '+j.executionCommand+'\n')
+                nodesListed += j.nodes
         with open(scriptName,'w') as script:
             script.write("#! /bin/bash \n")
             script.write("#SBATCH -J "+self.name+"\n")
@@ -228,11 +234,7 @@ class Campaign(Base):
             updateString += "' R\n"
             script.write(updateString)
             script.write("source deactivate\n")
-            for j in jobList:
-                run = 'srun -n '
-                run += str(j.nodes)
-                run += ' '+j.executionCommand+' \n'
-            script.write(run)
+            script.write('srun -ntasks-per-node 1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
 
             script.write(str(self.footer)+"\n")
             script.write("source "+virtualEnvPath+"\n")
@@ -247,10 +249,16 @@ class Campaign(Base):
     def __createCheckSubmissionScript(self, Session, jobList):
         #construct a job check submission script from a list of jobs
         scriptName = os.path.join(self.workDir,self.name+"Check.bash")
+        confName = os.path.join(self.workDir,self.name+"Check.conf")
         nodes = 0
         for j in jobList:
             if (j.checkOutputCommand):
                 nodes += j.checkNodes
+                with open(confName,'w') as script:
+        nodesListed = 0
+        for i,j in enumerate(jobList):
+            script.write(str(nodesListed)+'-'+str(nodesListed+j.nodes)+' '+j.executionCommand+'\n')
+            nodesListed += j.nodes
         with open(scriptName,'w') as script:
             script.write("#! /bin/bash \n")
             script.write("#SBATCH -J "+self.name+"Check\n")
@@ -263,10 +271,7 @@ class Campaign(Base):
                         maxWT = j.checkWallTime
                 script.write("#SBATCH -t "+str(maxWT)+"\n")
             script.write("#SBATCH -N "+str(nodes)+"\n")
-            for j in jobList:
-                run = 'srun -n '
-                run += str(j.checkNodes)
-                run += ' '+j.checkOutputCommand+' \n'
+            script.write('srun -ntasks-per-node 1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
             script.write(self.checkHeader+"\n")
             script.write(run+"\n")
             script.write(str(self.checkFooter)+"\n")
