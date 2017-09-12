@@ -210,7 +210,10 @@ class Campaign(Base):
         with open(confName,'w') as script:
             nodesListed = 0
             for i,j in enumerate(jobList):
-                script.write(str(nodesListed)+'-'+str(nodesListed+j.nodes)+' '+j.executionCommand+'\n')
+                if (j.nodes == 1):
+                    script.write(str(nodesListed)+' '+j.executionCommand+'\n')
+                else:    
+                    script.write(str(nodesListed)+'-'+str(nodesListed+j.nodes-1)+' '+j.executionCommand+'\n')
                 nodesListed += j.nodes
         with open(scriptName,'w') as script:
             script.write("#! /bin/bash \n")
@@ -234,7 +237,7 @@ class Campaign(Base):
             updateString += "' R\n"
             script.write(updateString)
             script.write("source deactivate\n")
-            script.write('srun -ntasks-per-node 1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
+            script.write('srun --ntasks-per-node=1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
 
             script.write(str(self.footer)+"\n")
             script.write("source "+virtualEnvPath+"\n")
@@ -258,7 +261,10 @@ class Campaign(Base):
             nodesListed = 0
             for i,j in enumerate(jobList):
                 if(j.checkOutputCommand):
-                    script.write(str(nodesListed)+'-'+str(nodesListed+j.checkNodes)+' '+j.executionCommand+'\n')
+                    if (j.checkNodes == 1):
+                        script.write(str(nodesListed)+' '+j.checkOutputCommand+'\n')
+                    else:
+                        script.write(str(nodesListed)+'-'+str(nodesListed+j.checkNodes-1)+' '+j.checkOutputCommand+'\n')
                     nodesListed += j.checkNodes
         with open(scriptName,'w') as script:
             script.write("#! /bin/bash \n")
@@ -272,9 +278,8 @@ class Campaign(Base):
                         maxWT = j.checkWallTime
                 script.write("#SBATCH -t "+str(maxWT)+"\n")
             script.write("#SBATCH -N "+str(nodes)+"\n")
-            script.write('srun -ntasks-per-node 1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
             script.write(self.checkHeader+"\n")
-            script.write(run+"\n")
+            script.write('srun --ntasks-per-node=1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
             script.write(str(self.checkFooter)+"\n")
             script.write("source "+virtualEnvPath+"\n")
             updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
