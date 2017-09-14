@@ -2,7 +2,7 @@ import os,sys,datetime
 
 #Where the database is stored
 localDBFile = os.path.split(os.path.abspath(__file__))[0]+"/manager.db"
-#The virtualenv with required python packageds
+#The virtualenv with required python packages
 virtualEnvPath = "activate titanManager"
 #The executable that updates job statuses
 jobStatusManagerPath = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..','jobStatusManager.py'))
@@ -17,6 +17,7 @@ maxWallTime = datetime.timedelta(hours=23)
 userName = os.environ['USER']
 #Project - for building submission scripts - deprecated on nersc
 projectCode = 'NPH103'
+maxJobFails = 5
 
 envVarsPath = os.path.split(os.path.abspath(__file__))[0]
 envName = 'environment.py'
