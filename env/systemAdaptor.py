@@ -32,7 +32,7 @@ class systemAdaptor(object):
 
 	#A directory the example campaign can work out of
 	@abc.abstractproperty
-	def exampleWorkdir(self):
+	def exampleWorkDir(self):
 		return
 
 	#The total nodes on this cluster

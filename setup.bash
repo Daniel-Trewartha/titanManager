@@ -1,5 +1,9 @@
 #! /bin/bash
 
-module load python
-conda create -n titanManager --file requirements.txt
-source activate titanManager
+echo Enter Cluster Name
+
+read clusterName
+
+setupScript=$(python env/setup.py ${clusterName}Adaptor)
+
+bash ${setupScript}
