@@ -54,22 +54,25 @@ class systemAdaptor(object):
 	#The maximum time any job should be able to run
 	@abc.abstractproperty
 	def maxWallTime(self):
-		return self.config().get("Settings","maxwalltime")
+		return self.config().get("settings","maxwalltime")
 
 	#The maximum number of batch jobs at any given time
 	@abc.abstractproperty
 	def maxJobs(self):
-		return self.config().get("Settings","maxjobs")
+		return self.config().get("settings","maxjobs")
 
 	#The number of times a job should be submitted before being marked as failed
 	@abc.abstractproperty
 	def maxJobFails(self):
-		return self.config().get("Settings","maxjobfails")
+		return self.config().get("settings","maxjobfails")
 
 	#The number of times a job should be submitted before being marked as failed
 	@abc.abstractproperty
 	def backfillMode(self):
-		return self.config().get("Settings","backfillmode")
+                if (self.config().get("settings","backfillmode") in ["True","true","T","t"]):
+                        return True
+                else:
+                        return False
 
 	#Receive a list of job objects from campaign in joblist
 	#Construct a queue submission script

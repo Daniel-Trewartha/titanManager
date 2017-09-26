@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-import os,subprocess
+import os,subprocess,sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
 from env.currentAdaptor import adaptor as a
 

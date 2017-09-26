@@ -109,7 +109,7 @@ class coriAdaptor(systemAdaptor):
             script.write(str(campaign.footer)+"\n")
 
             if (endStat is not ''):
-                script.write(self.activateVirtualEnvPath+"\n")
+                script.write(self.activateVirtualEnv+"\n")
                 updateString = "python "+self.jobStatusManagerPath+" updateJobStatus '"
                 for j in jobList:
                     updateString += str(j.id)+" "

@@ -53,7 +53,7 @@ class Campaign(Base):
                 return True
         return False
 
-    def submitJobs(self,Session,maxNodes=a.totalNodes,maxJobs=-1):
+    def submitJobs(self,Session,maxNodes=int(a.totalNodes),maxJobs=-1):
         #submit a bundle of up to maxJobs jobs that occupy fewer than maxNodes nodes
         #return number of nodes submitted
         if(maxJobs == -1):
@@ -71,6 +71,7 @@ class Campaign(Base):
                 jobCount += 1
             if (jobCount == maxJobs):
                 break
+        print(jobList)
         if (len(jobList) > 0):
             scriptName = self.__createSubmissionScript(Session,jobList)
             cmd = "sbatch "+scriptName
@@ -201,10 +202,10 @@ class Campaign(Base):
     ## Private Methods
 
     def __createSubmissionScript(self,Session, jobList):
-        return a.createSubmssionScript(Session, self, jobList, 'nodes', 'wallTime', 'executionCommand', 'R', 'C', '')
+        return a.createSubmissionScript(Session, self, jobList, 'nodes', 'wallTime', 'executionCommand', 'R', 'C', '')
 
     def __createCheckSubmissionScript(self,Session, jobList):
-        return a.createSubmssionScript(Session, self, jobList, 'checkNodes', 'checkWallTime', 'checkOutputCommand', '', 'Checked', 'Check')
+        return a.createSubmissionScript(Session, self, jobList, 'checkNodes', 'checkWallTime', 'checkOutputCommand', '', 'Checked', 'Check')
 
     def __checkInput(self,Session,jobList=[]):
         if(jobList == []):
