@@ -1,6 +1,6 @@
 #Get an adaptor from stdin, run the setup method, print the result
 #Write adaptor into the config file
-import os, sys, importlib
+import os, sys
 import ConfigParser
 def main(adaptor):
 	adapt =  __import__(adaptor,fromlist=[''])

@@ -9,7 +9,7 @@ class titanAdaptor(systemAdaptor):
     #Conda stores virtual environments in conda directory - just need a name
     @property
     def activateVirtualEnv(self):
-        return "source titanManager/bin/activate"
+        return "source "+os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..','titanManager','bin','activate'))
 
     @property
     def deactivateVirtualEnv(self):
@@ -33,12 +33,12 @@ class titanAdaptor(systemAdaptor):
     #Environment variable that stores the scratch dir for current user
     @property
     def exampleWorkDir(self):
-        return os.environ['WORKDIR']
+        return os.path.join("/lustre/atlas/scratch/",self.user,self.projectCode.lower())
 
     #Header for the example campaign
     @property
     def exampleCampaignHeader(self):
-        return "#module load wraprun \ncd "+self.exampleWorkDir
+        return "module load wraprun \ncd "+self.exampleWorkDir
 
     @property
     def totalNodes(self):
@@ -76,7 +76,7 @@ class titanAdaptor(systemAdaptor):
     #startStat and endStat are the statuses job is updated to when script starts and finishes respectively
     #file suffix is appended to submission script names
     def createSubmissionScript(self, Session, campaign, jobList, nodesAttr, wtAttr, execAttr, startStat='', endStat='', fileSuffix=''):
-        scriptName = os.path.join(campaign.workdir,campaign.name+".csh")
+        scriptName = os.path.join(campaign.workDir,campaign.name+".csh")
         nodes = 0
         wraprun = 'wraprun '
         for j in jobList:
@@ -182,7 +182,7 @@ class titanAdaptor(systemAdaptor):
             f.write("module load python_virtualenv \n")
             f.write("virtualenv titanManager \n")
             f.write(self.activateVirtualEnv+"\n")
-            f.write("pip install -r requirements.txt \n")
+            f.write("pip install -r "+requirementsFile+" \n")
             f.write("easy_install faker \n")
 
         return setupScript
