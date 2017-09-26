@@ -1,6 +1,5 @@
 import os, time, sys
 import xml.etree.ElementTree as ET
-from env import prodEnvironment
 from models.job import Job
 from models.jobFile import File
 from models.campaign import Campaign

@@ -7,8 +7,8 @@ from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_property
 from src.base import Base
 from job import Job
-from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes, maxWallTime, projectCode
 from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
+from env.currentAdaptor import adaptor as a
 
 #A collection of jobs that are compatible to be wrapran.
 #It is the responsibility of the user to ensure that jobs have compatible walltimes, node requirements, modules etc.
@@ -53,7 +53,7 @@ class Campaign(Base):
                 return True
         return False
 
-    def submitJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
+    def submitJobs(self,Session,maxNodes=a.totalNodes,maxJobs=-1):
         #submit a bundle of up to maxJobs jobs that occupy fewer than maxNodes nodes
         #return number of nodes submitted
         if(maxJobs == -1):
@@ -89,7 +89,7 @@ class Campaign(Base):
         else:
             return 0
 
-    def submitCheckJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
+    def submitCheckJobs(self,Session,maxNodes=a.totalNodes,maxJobs=-1):
         #submit a bundle of up to maxJobs job checks that occupy fewer than maxNodes nodes
         #return number of nodes submitted
         if (maxJobs == -1):
@@ -200,95 +200,11 @@ class Campaign(Base):
 
     ## Private Methods
 
-    def __createSubmissionScript(self, Session, jobList):
-        #construct a job submission script from a list of jobs
-        scriptName = os.path.join(self.workDir,self.name+".bash")
-        confName = os.path.join(self.workDir,self.name+".conf")
-        nodes = 0
-        for j in jobList:
-            nodes += j.nodes
-        with open(confName,'w') as script:
-            nodesListed = 0
-            for i,j in enumerate(jobList):
-                if (j.nodes == 1):
-                    script.write(str(nodesListed)+' '+j.executionCommand+'\n')
-                else:    
-                    script.write(str(nodesListed)+'-'+str(nodesListed+j.nodes-1)+' '+j.executionCommand+'\n')
-                nodesListed += j.nodes
-        with open(scriptName,'w') as script:
-            script.write("#! /bin/bash \n")
-            script.write("#SBATCH -J "+self.name+"\n")
-            if(self.wallTime):
-                script.write("#SBATCH -t "+str(self.wallTime)+"\n")
-            else: 
-                maxWT = parseTimeString("00:00:10")
-                for j in jobList:
-                    if ((j.wallTime is not None) and j.wallTime > maxWT):
-                        maxWT = j.wallTime
-                script.write("#SBATCH -t "+str(maxWT)+"\n")
-            script.write("#SBATCH -N "+str(nodes)+"\n")
+    def __createSubmissionScript(self,Session, jobList):
+        return a.createSubmssionScript(Session, self, jobList, 'nodes', 'wallTime', 'executionCommand', 'R', 'C', '')
 
-            script.write(self.header+"\n")
-
-            script.write("source "+virtualEnvPath+"\n")
-            updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
-            for j in jobList:
-                updateString += str(j.id)+" "
-            updateString += "' R\n"
-            script.write(updateString)
-            script.write("source deactivate\n")
-            script.write('srun --ntasks-per-node=1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
-
-            script.write(str(self.footer)+"\n")
-            script.write("source "+virtualEnvPath+"\n")
-            updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
-            for j in jobList:
-                updateString += str(j.id)+" "
-            updateString += "' C\n"
-            script.write(updateString)
-            script.write("source deactivate\n")
-        return scriptName
-
-    def __createCheckSubmissionScript(self, Session, jobList):
-        #construct a job check submission script from a list of jobs
-        scriptName = os.path.join(self.workDir,self.name+"Check.bash")
-        confName = os.path.join(self.workDir,self.name+"Check.conf")
-        nodes = 0
-        for j in jobList:
-            if (j.checkOutputCommand):
-                nodes += j.checkNodes
-        with open(confName,'w') as script:
-            nodesListed = 0
-            for i,j in enumerate(jobList):
-                if(j.checkOutputCommand):
-                    if (j.checkNodes == 1):
-                        script.write(str(nodesListed)+' '+j.checkOutputCommand+'\n')
-                    else:
-                        script.write(str(nodesListed)+'-'+str(nodesListed+j.checkNodes-1)+' '+j.checkOutputCommand+'\n')
-                    nodesListed += j.checkNodes
-        with open(scriptName,'w') as script:
-            script.write("#! /bin/bash \n")
-            script.write("#SBATCH -J "+self.name+"Check\n")
-            if(self.wallTime):
-                script.write("#SBATCH -t "+str(self.checkWallTime)+"\n")
-            else: 
-                maxWT = parseTimeString("00:00:10")
-                for j in jobList:
-                    if ((j.checkWallTime is not None) and j.checkWallTime > maxWT):
-                        maxWT = j.checkWallTime
-                script.write("#SBATCH -t "+str(maxWT)+"\n")
-            script.write("#SBATCH -N "+str(nodes)+"\n")
-            script.write(self.checkHeader+"\n")
-            script.write('srun --ntasks-per-node=1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
-            script.write(str(self.checkFooter)+"\n")
-            script.write("source "+virtualEnvPath+"\n")
-            updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
-            for j in jobList:
-                updateString += str(j.id)+" "
-            updateString += "' Checked\n"
-            script.write(updateString)
-            script.write("source deactivate\n")
-        return scriptName
+    def __createCheckSubmissionScript(self,Session, jobList):
+        return a.createSubmssionScript(Session, self, jobList, 'checkNodes', 'checkWallTime', 'checkOutputCommand', '', 'Checked', 'Check')
 
     def __checkInput(self,Session,jobList=[]):
         if(jobList == []):

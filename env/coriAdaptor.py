@@ -35,16 +35,28 @@ class coriAdaptor(systemAdaptor):
     def exampleWorkDir(self):
         return os.environ['SCRATCH']
 
+    #Header for the example campaign
+    @property
+    def exampleCampaignHeader(self):
+        return "#SBATCH -p debug\n#SBATCH -C haswell\nmodule load python"
+
     @property
     def totalNodes(self):
         return 9688
 
+    @property
+    def maxWallTime(self):
+        return "23:00:00"
+
+    @property
+    def maxJobs(self):
+        return 50000
     #Receive a list of job objects from campaign in joblist
     #Construct a queue submission script
     #nodesAttr, wtAttr, execAttr are the job properties that give required nodes, wall time, execution command
     #startStat and endStat are the statuses job is updated to when script starts and finishes respectively
     #file suffix is appended to submission script names
-    def constructSubmissionScript(self, Session, campaign, jobList, nodesAttr, wtAttr, execAttr, startStat='', endStat='', fileSuffix=''):
+    def createSubmissionScript(self, Session, campaign, jobList, nodesAttr, wtAttr, execAttr, startStat='', endStat='', fileSuffix=''):
         scriptName = os.path.join(campaign.workDir,campaign.name+fileSuffix+".bash")
         confName = os.path.join(campaign.workDir,campaign.name+fileSuffix+".conf")
         nodes = 0

@@ -5,8 +5,7 @@
 #check outputs and such
 #then produce a report
 import os, time, sys
-from env import prodEnvironment
-from env.environment import backfillMode
+from env.currentAdaptor import adaptor as a
 from models.job import Job
 from models.jobFile import File
 from models.campaign import Campaign
@@ -23,7 +22,7 @@ def main():
 		for c in Session.query(Campaign).all():
 			print c.statusReport(Session)
 		print "Submitting jobs"
-		sN,sJ = submitJobs(Session,backfillMode,backfillMode)
+		sN,sJ = submitJobs(Session,a.backfillMode,a.backfillMode)
 		print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
 		jobsDict = getJobStatuses()
 		print "Currently queued jobs: "

@@ -1,16 +1,20 @@
 #Get an adaptor from stdin, run the setup method, print the result
 #Write adaptor into the config file
-import sys, importlib
-import configParser
+import os, sys, importlib
+import ConfigParser
 def main(adaptor):
 	adapt = importlib.import_module(adaptor)
 
 	a = getattr(adapt,adaptor)()
 
-	Config = ConfigParser.ConfigParser()
-	Config.read(os.path.join(os.path.split(os.path.abspath(__file__))[0],'config.ini'))
-	if (not 'Adaptor' in Config.sections()):
-		
+	config = ConfigParser.ConfigParser()
+	configFile = os.path.join(os.path.split(os.path.abspath(__file__))[0],'config.ini')
+	config.read(configFile)
+	if (not 'Adaptor' in config.sections()):
+		config.add_section("Adaptor")
+		config.set("Adaptor","adaptor",adaptor)
+		with open(configFile,'wb') as f:
+			config.write(f)
 
 	print a.setup()
 

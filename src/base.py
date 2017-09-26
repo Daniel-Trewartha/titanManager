@@ -4,10 +4,10 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine,event
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from env.environment import localDBFile
+from env.currentAdaptor import adaptor as a
 
 Base = declarative_base()
-engine = create_engine('sqlite:///'+localDBFile,echo=False)
+engine = create_engine('sqlite:///'+a.localDBFile,echo=False)
 
 def _fk_pragma_on_connect(dbapi_con, con_record):
     dbapi_con.execute('pragma foreign_keys=ON')
@@ -27,3 +27,5 @@ def session_scope(engine):
         raise
     finally:
         Session.close()
+
+def getAdaptor():

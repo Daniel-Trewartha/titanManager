@@ -1,8 +1,10 @@
 import xml.etree.ElementTree as ET
 import os,subprocess
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
+from env.currentAdaptor import adaptor as a
 
 #Create a demonstration 'test' campaign with two jobs
-workDir = os.environ['SCRATCH']
+workDir = a.exampleWorkDir
 #Mandatory fields for a campaign - name
 data = ET.Element("Data")
 campaign = ET.SubElement(data,"Campaign")
@@ -13,7 +15,7 @@ ET.SubElement(campaign,"wallTime").text = '00:10:00'
 ET.SubElement(campaign,"checkWallTime").text = '00:10:00'
 ET.SubElement(campaign,"workDir").text = workDir
 #headers and footers for pbs submission scripts
-header = "#SBATCH -p debug\n#SBATCH -C haswell\nmodule load python"
+header = a.exampleCampaignHeader
 footer = ""
 checkHeader = header
 checkFooter = ""
