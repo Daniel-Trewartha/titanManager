@@ -74,7 +74,7 @@ class Campaign(Base):
         print(jobList)
         if (len(jobList) > 0):
             scriptName = self.__createSubmissionScript(Session,jobList)
-            cmd = "sbatch "+scriptName
+            cmd = a.submitCommand+" "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsID = str.split(pbsSubmit.stdout.read().strip())[-1]
             try:
@@ -109,7 +109,7 @@ class Campaign(Base):
                 break
         if (len(jobList) > 0):
             scriptName = self.__createCheckSubmissionScript(Session,jobList)
-            cmd = "sbatch "+scriptName
+            cmd = a.submitCommand+" "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
             pbsID = str.split(pbsSubmit.stdout.read().strip())[-1]
             try:

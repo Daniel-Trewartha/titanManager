@@ -41,6 +41,11 @@ class systemAdaptor(object):
 	def totalNodes(self):
 		return
 
+	#The batch submission command
+	@abc.abstractproperty
+	def submitCommand(self):
+		return
+
 	#Provide a concrete implementation for pulling properties from config file
 	#adaptor implementations can use these or not as they wish
 
