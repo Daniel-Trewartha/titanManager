@@ -3,7 +3,7 @@
 import os, sys, importlib
 import ConfigParser
 def main(adaptor):
-	adapt = importlib.import_module(adaptor)
+	adapt =  __import__(adaptor,fromlist=[''])
 
 	a = getattr(adapt,adaptor)()
 

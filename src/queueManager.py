@@ -4,7 +4,6 @@ from datetime import timedelta
 from models.job import Job
 from models.jobFile import File
 from models.campaign import Campaign
-import src.pbsUtilities as pbsUtilities
 from src.base import Base,session_scope,engine
 from src.stringUtilities import parseTimeString
 from env.currentAdaptor import adaptor as a
@@ -12,12 +11,12 @@ from env.currentAdaptor import adaptor as a
 
 def submitJobs(Session,isWallTimeRestricted, isNodeRestricted):
     if(isWallTimeRestricted or isNodeRestricted):
-        nodes, wallTime = pbsUtilities.getFreeResources()
+        nodes, wallTime = a.getFreeResources()
     if (not isNodeRestricted):
         nodes = a.totalNodes
     if (not isWallTimeRestricted):
         wallTime = parseTimeString(a.maxWallTime)
-    availableJobs = int(a.maxJobs) - pbsUtilities.getQueuedJobs()
+    availableJobs = int(a.maxJobs) - a.getQueuedJobs()
     submittedNodes = nodes
     submittedJobs = availableJobs
     #Submit checks before new jobs

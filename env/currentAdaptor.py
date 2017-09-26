@@ -6,6 +6,6 @@ configFile = os.path.join(os.path.split(os.path.abspath(__file__))[0],'config.in
 config.read(configFile)
 
 ad = config.get("Adaptor","adaptor")
-adapt = importlib.import_module('env.'+ad)
+adapt = __import__('env.'+ad,fromlist=[''])
 
 adaptor = getattr(adapt,ad)()

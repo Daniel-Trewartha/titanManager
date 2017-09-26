@@ -11,7 +11,6 @@ from models.jobFile import File
 from models.campaign import Campaign
 from src.base import Base, session_scope, engine
 from src.queueManager import submitJobs
-from src.pbsUtilities import getJobStatuses
 from src.stringUtilities import parseTimeString
 
 def main():
@@ -24,7 +23,7 @@ def main():
 		print "Submitting jobs"
 		sN,sJ = submitJobs(Session,a.backfillMode,a.backfillMode)
 		print "Submitted "+str(sJ)+" jobs occupying "+str(sN)+" nodes"
-		jobsDict = getJobStatuses()
+		jobsDict = a.getJobStatuses()
 		print "Currently queued jobs: "
 		print jobsDict
 		for c in Session.query(Campaign).all():
