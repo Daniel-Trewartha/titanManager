@@ -27,5 +27,3 @@ def session_scope(engine):
         raise
     finally:
         Session.close()
-
-def getAdaptor():

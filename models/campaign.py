@@ -212,7 +212,7 @@ class Campaign(Base):
         for j in jobList:
             if (j.status == "Accepted" or j.status == "Failed" or j.status == "Missing Input"):
                 if (j.checkInput(Session)):
-                    if (j.numFails < 5):
+                    if (j.numFails < a.maxJobFails):
                         j.status =  "Ready"
                     else:
                         j.status = "Requires Attention"

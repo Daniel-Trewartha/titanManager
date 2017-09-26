@@ -1,4 +1,5 @@
-import abc
+import abc, os
+import ConfigParser
 
 #An abstract class that defines information required to run on a cluster	
 
@@ -40,13 +41,43 @@ class systemAdaptor(object):
 	def totalNodes(self):
 		return
 
+	#Provide a concrete implementation for pulling properties from config file
+	#adaptor implementations can use these or not as they wish
+
+	#Returns the config file object
+	def config(self):
+		config = ConfigParser.ConfigParser()
+		configFile = os.path.join(os.path.split(os.path.abspath(__file__))[0],'config.ini')
+		config.read(configFile)
+		return config
+
+	#The maximum time any job should be able to run
+	@abc.abstractproperty
+	def maxWallTime(self):
+		return self.config().get("Settings","maxwalltime")
+
+	#The maximum number of batch jobs at any given time
+	@abc.abstractproperty
+	def maxJobs(self):
+		return self.config().get("Settings","maxjobs")
+
+	#The number of times a job should be submitted before being marked as failed
+	@abc.abstractproperty
+	def maxJobFails(self):
+		return self.config().get("Settings","maxjobfails")
+
+	#The number of times a job should be submitted before being marked as failed
+	@abc.abstractproperty
+	def backfillMode(self):
+		return self.config().get("Settings","backfillmode")
+
 	#Receive a list of job objects from campaign in joblist
 	#Construct a queue submission script
 	#nodesAttr, wtAttr, execAttr are the job properties that give required nodes, wall time, execution command
 	#startStat and endStat are the statuses job is updated to when script starts and finishes respectively
 	#file suffix is appended to submission script names
 	@abc.abstractmethod
-	def constructSubmissionScript(self, Session, campaign, jobList, nodesAttr, wtAttr, execAttr, startStat, endStat, fileSuffix):
+	def createSubmissionScript(self, Session, campaign, jobList, nodesAttr, wtAttr, execAttr, startStat, endStat, fileSuffix):
 		return
 
 	#Install required packages, set up a virtualenv

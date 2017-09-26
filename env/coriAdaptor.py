@@ -44,13 +44,24 @@ class coriAdaptor(systemAdaptor):
     def totalNodes(self):
         return 9688
 
+    #Get these properties from config file - implementation defined in systemAdaptor abstract class
+
     @property
     def maxWallTime(self):
-        return "23:00:00"
+        return super(coriAdaptor,self).maxWallTime
 
     @property
     def maxJobs(self):
-        return 50000
+        return super(coriAdaptor,self).maxJobs
+
+    @property
+    def maxJobFails(self):
+        return super(coriAdaptor,self).maxJobFails
+
+    @property
+    def backfillMode(self):
+        return super(coriAdaptor,self).backfillMode
+
     #Receive a list of job objects from campaign in joblist
     #Construct a queue submission script
     #nodesAttr, wtAttr, execAttr are the job properties that give required nodes, wall time, execution command
