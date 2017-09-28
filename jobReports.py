@@ -15,7 +15,7 @@ def jobStatuses():
         print c.id, c.name
     print("Jobs: ")
     for j in Session.query(Job).all():
-        print j.id, j.name, j.status, j.campaign.name
+        print j.id, j.name, j.status, j.campaign.name, j.numFails
     print("Files: ")
     for f in Session.query(File).all():
         print f.id, os.path.join(f.fileDir,f.name), f.exists(Session), f.job.name, f.job.campaign.name
@@ -23,8 +23,9 @@ def jobStatuses():
 
 if __name__ == '__main__':
     with session_scope(engine) as Session:
-        if(len(sys.argv)>1):
-            if (sys.argv[1] == 'jobStatuses'):
-                print jobStatuses()
-        else:
-            main()
+        #if(len(sys.argv)>1):
+        #    if (sys.argv[1] == 'jobStatuses'):
+        #        print jobStatuses()
+        #else:
+        #    main()
+        print jobStatuses()

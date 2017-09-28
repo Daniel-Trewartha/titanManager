@@ -7,8 +7,8 @@ from sqlalchemy.event import listen
 from sqlalchemy.ext.hybrid import hybrid_property
 from src.base import Base
 from job import Job
-from env.environment import virtualEnvPath, jobStatusManagerPath, totalNodes, maxWallTime, projectCode
 from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
+from env.currentAdaptor import adaptor as a
 
 #A collection of jobs that are compatible to be wrapran.
 #It is the responsibility of the user to ensure that jobs have compatible walltimes, node requirements, modules etc.
@@ -19,6 +19,7 @@ class Campaign(Base):
     id = Column(Integer, primary_key=True)
     name = Column('name',String,unique=True,nullable=False)
     jobs = relationship("Job", back_populates="campaign",cascade="all, delete-orphan")
+    workDir = Column('workDir',String,default=os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
     header = Column('header',String)
     footer = Column('footer',String)
     checkHeader = Column('checkHeader',String)
@@ -52,7 +53,7 @@ class Campaign(Base):
                 return True
         return False
 
-    def submitJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
+    def submitJobs(self,Session,maxNodes=int(a.totalNodes),maxJobs=-1):
         #submit a bundle of up to maxJobs jobs that occupy fewer than maxNodes nodes
         #return number of nodes submitted
         if(maxJobs == -1):
@@ -70,11 +71,12 @@ class Campaign(Base):
                 jobCount += 1
             if (jobCount == maxJobs):
                 break
+        print(jobList)
         if (len(jobList) > 0):
             scriptName = self.__createSubmissionScript(Session,jobList)
-            cmd = "qsub "+scriptName
+            cmd = a.submitCommand+" "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-            pbsID = pbsSubmit.stdout.read().strip()
+            pbsID = str.split(pbsSubmit.stdout.read().strip())[-1]
             try:
                 int(pbsID)
             except ValueError:
@@ -88,7 +90,7 @@ class Campaign(Base):
         else:
             return 0
 
-    def submitCheckJobs(self,Session,maxNodes=totalNodes,maxJobs=-1):
+    def submitCheckJobs(self,Session,maxNodes=a.totalNodes,maxJobs=-1):
         #submit a bundle of up to maxJobs job checks that occupy fewer than maxNodes nodes
         #return number of nodes submitted
         if (maxJobs == -1):
@@ -107,9 +109,9 @@ class Campaign(Base):
                 break
         if (len(jobList) > 0):
             scriptName = self.__createCheckSubmissionScript(Session,jobList)
-            cmd = "qsub "+scriptName
+            cmd = a.submitCommand+" "+scriptName
             pbsSubmit = subprocess.Popen(cmd,stdout=subprocess.PIPE,shell=True)
-            pbsID = pbsSubmit.stdout.read().strip()
+            pbsID = str.split(pbsSubmit.stdout.read().strip())[-1]
             try:
                 int(pbsID)
             except ValueError:
@@ -199,88 +201,11 @@ class Campaign(Base):
 
     ## Private Methods
 
-    def __createSubmissionScript(self, Session, jobList):
-        #construct a job submission script from a list of jobs
-        scriptName = self.name+".csh"
-        nodes = 0
-        wraprun = 'wraprun '
-        for j in jobList:
-            nodes += j.nodes
-            wraprun += '-n '+str(j.nodes)
-            wraprun += ' '+j.executionCommand+' : '
-        wraprun = wraprun[:-2]
-        with open(scriptName,'w') as script:
-            script.write("#PBS -A "+projectCode+"\n")
-            script.write("#PBS -N "+self.name+"\n")
-            if(self.wallTime):
-                script.write("#PBS -l walltime="+str(self.wallTime)+"\n")
-            else: 
-                maxWT = parseTimeString("00:00:10")
-                for j in jobList:
-                    if ((j.wallTime is not None) and j.wallTime > maxWT):
-                        maxWT = j.wallTime
-                script.write("#PBS -l walltime="+str(maxWT)+"\n")
-            script.write("#PBS -l nodes="+str(nodes)+"\n")
-            script.write("#PBS -j oe \n")
+    def __createSubmissionScript(self,Session, jobList):
+        return a.createSubmissionScript(Session, self, jobList, 'nodes', 'wallTime', 'executionCommand', 'R', 'C', '')
 
-            script.write(self.header+"\n")
-
-            script.write("source "+virtualEnvPath+"\n")
-            updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
-            for j in jobList:
-                updateString += str(j.id)+" "
-            updateString += "' R\n"
-            script.write(updateString)
-            script.write("deactivate\n")
-            script.write(wraprun+"\n")
-            script.write(str(self.footer)+"\n")
-            script.write("source "+virtualEnvPath+"\n")
-            updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
-            for j in jobList:
-                updateString += str(j.id)+" "
-            updateString += "' C\n"
-            script.write(updateString)
-            script.write("deactivate\n")
-        return scriptName
-
-    def __createCheckSubmissionScript(self, Session, jobList):
-        #construct a job check submission script from a list of jobs
-        scriptName = self.name+"Check.csh"
-        nodes = 0
-        wraprun = 'wraprun '
-        for j in jobList:
-            if (j.checkOutputCommand):
-                nodes += j.nodes
-                wraprun += '-n '+str(j.nodes)
-                wraprun += ' '+j.checkOutputCommand+' : '
-            else:
-                print "Warning: job " + j.jobName+", "+str(j.id)+" has no check script"
-        wraprun = wraprun[:-2]
-        with open(scriptName,'w') as script:
-            script.write("#PBS -A "+projectCode+"\n")
-            script.write("#PBS -N "+self.name+"Check\n")
-            if(self.wallTime):
-                script.write("#PBS -l walltime="+str(self.checkWallTime)+"\n")
-            else: 
-                maxWT = parseTimeString("00:00:10")
-                for j in jobList:
-                    if ((j.checkWallTime is not None) and j.checkWallTime > maxWT):
-                        maxWT = j.checkWallTime
-                script.write("#PBS -l walltime="+str(maxWT)+"\n")
-            script.write("#PBS -l nodes="+str(nodes)+"\n")
-            script.write("#PBS -j oe \n")
-
-            script.write(self.checkHeader+"\n")
-            script.write(wraprun+"\n")
-            script.write(str(self.checkFooter)+"\n")
-            script.write("source "+virtualEnvPath+"\n")
-            updateString = "python "+jobStatusManagerPath+" updateJobStatus '"
-            for j in jobList:
-                updateString += str(j.id)+" "
-            updateString += "' Checked\n"
-            script.write(updateString)
-            script.write("deactivate\n")
-        return scriptName
+    def __createCheckSubmissionScript(self,Session, jobList):
+        return a.createSubmissionScript(Session, self, jobList, 'checkNodes', 'checkWallTime', 'checkOutputCommand', '', 'Checked', 'Check')
 
     def __checkInput(self,Session,jobList=[]):
         if(jobList == []):
@@ -288,7 +213,7 @@ class Campaign(Base):
         for j in jobList:
             if (j.status == "Accepted" or j.status == "Failed" or j.status == "Missing Input"):
                 if (j.checkInput(Session)):
-                    if (j.numFails < 5):
+                    if (j.numFails < a.maxJobFails):
                         j.status =  "Ready"
                     else:
                         j.status = "Requires Attention"

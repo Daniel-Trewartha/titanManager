@@ -1,47 +1,68 @@
 <Data>
-	<Campaign>
-		<name>Test</name>
-		<wallTime>00:10:00</wallTime>
-		<checkWallTime>00:10:00</checkWallTime>
-		<header>module load wraprun 
-		cd /mnt/c/Users/danie/titanManager/examples</header>
-		<footer />
-		<checkHeader>module load wraprun 
-		cd /mnt/c/Users/danie/titanManager/examples</checkHeader>
-		<checkFooter />
-	</Campaign>
-	<Job>
-		<name>testJob1</name>
-		<checkNodes>1</checkNodes>
-		<nodes>1</nodes>
-		<checkWallTime>00:10:00</checkWallTime>
-		<wallTime>00:10:00</wallTime>
-		<executionCommand>serial /mnt/c/Users/danie/titanManager/examples/testJob.bash 'Successful!' /mnt/c/Users/danie/titanManager/examples/testJob1.out</executionCommand>
-		<checkOutputCommand>serial /mnt/c/Users/danie/titanManager/examples/checkTestJob.bash /mnt/c/Users/danie/titanManager/examples/testJob1.out /mnt/c/Users/danie/titanManager/examples/testJob1Check.out</checkOutputCommand>
-		<checkOutputScript>grep 'Successful' /mnt/c/Users/danie/titanManager/examples/testJob1Check.out</checkOutputScript>
-		<campaign>Test</campaign>
-		<inputFiles>
-			<elem><name>testJob.bash</name><fileDir>/mnt/c/Users/danie/titanManager/examples</fileDir></elem><elem><name>checkTestJob.bash</name><fileDir>/mnt/c/Users/danie/titanManager/examples</fileDir></elem>
-		</inputFiles>
-		<outputFiles>
-			<elem><name>testJob1.out</name><fileDir>/mnt/c/Users/danie/titanManager/examples</fileDir></elem>
-		</outputFiles>
-	</Job>
-	<Job>
-		<name>testJob2</name>
-		<checkNodes>1</checkNodes>
-		<nodes>1</nodes>
-		<checkWallTime>00:10:00</checkWallTime>
-		<wallTime>00:10:00</wallTime>
-		<executionCommand>serial /lustre/atlas/scratch/danieltr/nph103/testJob.bash 'Successful!' /lustre/atlas/scratch/danieltr/nph103/testJob2.out</executionCommand>
-		<checkOutputCommand>serial /lustre/atlas/scratch/danieltr/nph103/checkTestJob.bash /lustre/atlas/scratch/danieltr/nph103/testJob2.out /lustre/atlas/scratch/danieltr/nph103/testJob2Check.out</checkOutputCommand>
-		<checkOutputScript>grep 'Successful' /lustre/atlas/scratch/danieltr/nph103/testJob2Check.out</checkOutputScript>
-		<campaign>Test</campaign>
-		<inputFiles>
-			<elem><name>testJob.bash</name><fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir></elem><elem><name>checkTestJob.bash</name><fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir></elem>
-		</inputFiles>
-		<outputFiles>
-			<elem><name>testJob2.out</name><fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir></elem>
-		</outputFiles>
-	</Job>
+  <Campaign>
+    <name>Test</name>
+    <wallTime>00:10:00</wallTime>
+    <checkWallTime>00:10:00</checkWallTime>
+    <workDir>/lustre/atlas/scratch/danieltr/nph103</workDir>
+    <header>module load wraprun 
+      cd /lustre/atlas/scratch/danieltr/nph103</header>
+    <footer />
+    <checkHeader>module load wraprun 
+      cd /lustre/atlas/scratch/danieltr/nph103</checkHeader>
+    <checkFooter />
+  </Campaign>
+  <Job>
+    <name>testJob1</name>
+    <checkNodes>1</checkNodes>
+    <nodes>1</nodes>
+    <checkWallTime>00:10:00</checkWallTime>
+    <wallTime>00:10:00</wallTime>
+    <executionCommand>serial /lustre/atlas/scratch/danieltr/nph103/testJob.bash 'Successful!' /lustre/atlas/scratch/danieltr/nph103/testJob1.out</executionCommand>
+    <checkOutputCommand>serial /lustre/atlas/scratch/danieltr/nph103/checkTestJob.bash /lustre/atlas/scratch/danieltr/nph103/testJob1.out /lustre/atlas/scratch/danieltr/nph103/testJob1Check.out</checkOutputCommand>
+    <checkOutputScript>grep 'Successful' /lustre/atlas/scratch/danieltr/nph103/testJob1Check.out</checkOutputScript>
+    <campaign>Test</campaign>
+    <inputFiles>
+      <elem>
+	<name>testJob.bash</name>
+	<fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir>
+      </elem>
+      <elem>
+	<name>checkTestJob.bash</name>
+	<fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir>
+      </elem>
+    </inputFiles>
+    <outputFiles>
+      <elem>
+	<name>testJob1.out</name>
+	<fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir>
+      </elem>
+    </outputFiles>
+  </Job>
+  <Job>
+    <name>testJob2</name>
+    <checkNodes>1</checkNodes>
+    <nodes>1</nodes>
+    <checkWallTime>00:10:00</checkWallTime>
+    <wallTime>00:10:00</wallTime>
+    <executionCommand>serial /lustre/atlas/scratch/danieltr/nph103/testJob.bash 'Successful!' /lustre/atlas/scratch/danieltr/nph103/testJob2.out</executionCommand>
+    <checkOutputCommand>serial /lustre/atlas/scratch/danieltr/nph103/checkTestJob.bash /lustre/atlas/scratch/danieltr/nph103/testJob2.out /lustre/atlas/scratch/danieltr/nph103/testJob2Check.out</checkOutputCommand>
+    <checkOutputScript>grep 'Successful' /lustre/atlas/scratch/danieltr/nph103/testJob2Check.out</checkOutputScript>
+    <campaign>Test</campaign>
+    <inputFiles>
+      <elem>
+	<name>testJob.bash</name>
+	<fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir>
+      </elem>
+      <elem>
+	<name>checkTestJob.bash</name>
+	<fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir>
+      </elem>
+    </inputFiles>
+    <outputFiles>
+      <elem>
+	<name>testJob2.out</name>
+	<fileDir>/lustre/atlas/scratch/danieltr/nph103</fileDir>
+      </elem>
+    </outputFiles>
+  </Job>
 </Data>

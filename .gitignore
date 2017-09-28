@@ -4,3 +4,6 @@ env/*.db
 titanManager/
 *.xml
 *.o[0-9]*
+env/requirements.txt
+env/*Setup.bash
+.ssh

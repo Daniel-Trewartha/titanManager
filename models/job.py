@@ -6,7 +6,6 @@ from sqlalchemy.orm import relationship, mapper, joinedload
 from sqlalchemy.inspection import inspect
 from sqlalchemy.event import listen
 from src.base import Base
-from env.environment import virtualEnvPath, jobStatusManagerPath
 from src.stringUtilities import stripWhiteSpace,stripSlash,parseTimeString
 
 class Job(Base):
