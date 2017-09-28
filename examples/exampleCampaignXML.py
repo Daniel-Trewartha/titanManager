@@ -52,10 +52,10 @@ ET.SubElement(job1,"wallTime").text = '00:10:00'
 #test Job creates a file at workDir
 #Note use of serial for a non-MPI call
 #Also note arguments to executable fed in as usual with serial
-ET.SubElement(job1,"executionCommand").text = os.path.join(workDir,outputExec)+" 'Successful!' "+os.path.join(workDir,output)
+ET.SubElement(job1,"executionCommand").text = 'serial '+os.path.join(workDir,outputExec)+" 'Successful!' "+os.path.join(workDir,output)
 #Check command to be executed with wraprun
 #test Job's check copies the contents of the output file verbatim
-ET.SubElement(job1,"checkOutputCommand").text = os.path.join(workDir,checkOutputExec)+" "+os.path.join(workDir,output)+" "+os.path.join(workDir,checkOutput)
+ET.SubElement(job1,"checkOutputCommand").text = 'serial '+os.path.join(workDir,checkOutputExec)+" "+os.path.join(workDir,output)+" "+os.path.join(workDir,checkOutput)
 #Front end script to verify the output of checker
 #Should write True or False to stdout
 #test Job greps 'Successful' in the expected check output location
@@ -89,10 +89,10 @@ ET.SubElement(job2,"checkNodes").text = str(1)
 ET.SubElement(job2,"nodes").text = str(1)
 ET.SubElement(job2,"checkWallTime").text = '00:10:00'
 ET.SubElement(job2,"wallTime").text = '00:10:00'
-ET.SubElement(job2,"executionCommand").text = os.path.join(workDir,outputExec)+" 'Successful!' "+os.path.join(workDir,output)
+ET.SubElement(job2,"executionCommand").text = 'serial '+os.path.join(workDir,outputExec)+" 'Successful!' "+os.path.join(workDir,output)
 #Check command to be executed with wraprun
 #test Job's check copies the contents of the output file verbatim
-ET.SubElement(job2,"checkOutputCommand").text = os.path.join(workDir,checkOutputExec)+" "+os.path.join(workDir,output)+" "+os.path.join(workDir,checkOutput)
+ET.SubElement(job2,"checkOutputCommand").text = 'serial '+os.path.join(workDir,checkOutputExec)+" "+os.path.join(workDir,output)+" "+os.path.join(workDir,checkOutput)
 ET.SubElement(job2,"checkOutputScript").text = "grep 'Successful' "+os.path.join(workDir,checkOutput)
 ET.SubElement(job2,"campaign").text = "Test"
 iF = ET.SubElement(job2,'inputFiles')
