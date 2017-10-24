@@ -20,6 +20,7 @@ class Campaign(Base):
     name = Column('name',String,unique=True,nullable=False)
     jobs = relationship("Job", back_populates="campaign",cascade="all, delete-orphan")
     workDir = Column('workDir',String,default=os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'..')))
+    maxJobSize = Column('maxJobSize',Integer,nullable=True)
     header = Column('header',String)
     footer = Column('footer',String)
     checkHeader = Column('checkHeader',String)
@@ -58,6 +59,8 @@ class Campaign(Base):
         #return number of nodes submitted
         if(maxJobs == -1):
             maxJobs = len(self.jobs)
+        if(self.maxJobSize and self.maxJobSize < maxNodes):
+            maxNodes = self.maxJobSize
 
         self.__checkInput(Session)
         #list of jobs to submit

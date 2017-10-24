@@ -37,7 +37,7 @@ def main():
 				unfinishedBusiness = True
 		time.sleep(60)
 		if (not os.path.exists(a.localDBFile)):
-			break()
+			break
 
 if __name__ == '__main__':
     with session_scope(engine) as Session:
