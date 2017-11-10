@@ -15,7 +15,7 @@ ET.SubElement(campaign,"wallTime").text = '00:10:00'
 ET.SubElement(campaign,"checkWallTime").text = '00:10:00'
 ET.SubElement(campaign,"workDir").text = workDir
 #This campaign will only submit jobs that occupy up to 2 nodes
-ET.SubElement(campaign,"maxJobSize").text = maxJobSize
+ET.SubElement(campaign,"maxJobSize").text = "2"
 #headers and footers for pbs submission scripts
 header = a.exampleCampaignHeader
 footer = ""

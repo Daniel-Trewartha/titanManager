@@ -48,6 +48,11 @@ class coriAdaptor(systemAdaptor):
     def submitCommand(self):
         return 'sbatch'
 
+    #location of wraprun executable
+    @property
+    def wraprun(self):
+        return  os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],'wraprun','wraprun'))
+
     #Get these properties from config file - implementation defined in systemAdaptor abstract class
 
     @property
@@ -73,18 +78,12 @@ class coriAdaptor(systemAdaptor):
     #file suffix is appended to submission script names
     def createSubmissionScript(self, Session, campaign, jobList, nodesAttr, wtAttr, execAttr, startStat='', endStat='', fileSuffix=''):
         scriptName = os.path.join(campaign.workDir,campaign.name+fileSuffix+".bash")
-        confName = os.path.join(campaign.workDir,campaign.name+fileSuffix+".conf")
         nodes = 0
+        wraprun = self.wraprun+' '
         for j in jobList:
             nodes += int(getattr(j,nodesAttr))
-        with open(confName,'w') as script:
-            nodesListed = 0
-            for i,j in enumerate(jobList):
-                if (j.nodes == 1):
-                    script.write(str(nodesListed)+' '+getattr(j,execAttr)+'\n')
-                else:    
-                    script.write(str(nodesListed)+'-'+str(nodesListed+int(getattr(j,nodesAttr))-1)+' '+getattr(j,execAttr)+'\n')
-                nodesListed += int(getattr(j,nodesAttr))
+            wraprun += '-n '+str(getattr(j,nodesAttr))
+            wraprun += ' '+getattr(j,execAttr)+' : '
         with open(scriptName,'w') as script:
             script.write("#! /bin/bash \n")
             script.write("#SBATCH -J "+campaign.name+"\n")
@@ -108,7 +107,7 @@ class coriAdaptor(systemAdaptor):
                 updateString += "' "+startStat+"\n"
                 script.write(updateString)
                 script.write(self.deactivateVirtualEnv+"\n")
-            script.write('srun --ntasks-per-node=1 -n '+str(nodes)+' --multi-prog '+confName+' \n')
+            script.write(wraprun+"\n")
 
             script.write(str(campaign.footer)+"\n")
 
